@@ -9,15 +9,6 @@ const switchLabels={...toolsNav,ticker:['Qiimaha tooska ah','Price ticker'],news
 const t = (ctx,so,en) => ctx.lang==='en'?en:so;
 const enabled = (ctx,key) => ctx.sections?.[key]!==false;
 const editionHref = (ctx,path) => path==='/' ? '/'+ctx.lang : ctx.lang==='en' ? path+(path.includes('?')?'&':'?')+'lang=en' : path;
-function tradingViewChartUrl(tvSymbol){
-  return 'https://www.tradingview.com/chart/?symbol='+encodeURIComponent(tvSymbol);
-}
-function tradingViewChartHref(kind,code){
-  if(kind==='forex') return tradingViewChartUrl('FX:'+String(code||'').replace('/','').toUpperCase());
-  const info=typeof cryptoChartSymbol==='function'?cryptoChartSymbol(code):{ok:false};
-  const tv=info&&info.ok?info.tv:'BINANCE:'+String(code||'').toUpperCase().replace(/USDT$/,'')+'USDT';
-  return tradingViewChartUrl(tv);
-}
 const marketCoins = coins;
 const tickerCoins = marketCoins.concat([
   ['link','Chainlink'],['avax','Avalanche'],['sui','Sui'],['trx','TRON'],
@@ -353,6 +344,7 @@ function todayMarket(ctx, snapshot){
         '<span class="ed-coin">'+icon+'<strong>'+label+'</strong></span>'+
         '<span class="ed-last">'+edMoney(row?.price)+'</span>'+
         '<span class="ed-chg" data-direction="'+dir+'">'+pct+'</span>'+
+        '<span class="ed-row-affordance" aria-hidden="true">'+chartArrowIcon()+'</span>'+
       '</div>'+
       '<div class="ed-spark-wrap">'+edSpark(row?.spark)+'</div>'+
     '</a>';
@@ -607,16 +599,11 @@ function forexPairLabel(slug){
   return found?found[0]+'/'+found[1]:'';
 }
 function cryptoChartSymbol(slug){
-  const raw=String(slug||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
-  const base=raw.replace(/USDT$/,'').replace(/USD$/,'')||raw;
+  const target=tradingViewCryptoTarget(slug);
+  const base=target.base;
   const list=typeof tickerCoins!=='undefined'?tickerCoins:(typeof marketCoins!=='undefined'?marketCoins:coins||[]);
   const known=new Map(list.map(([s,n])=>[String(s).toUpperCase(),n]));
-  if(base==='USDT') return {ok:true,tv:'BINANCE:USDTUSDC',base:'USDT',name:known.get('USDT')||'Tether'};
-  if(known.has(base)) return {ok:true,tv:'BINANCE:'+base+'USDT',base,name:known.get(base)};
-  return {ok:false};
-}
-function chartArrowIcon(){
-  return '<svg class="ed-chart-arrow" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16l4-5 3 2.5 5-7"/><path d="M14 6h5v5"/></svg>';
+  return {ok:!!target.tv,tv:target.tv,base,name:known.get(base)||base,href:target.href};
 }
 function instrumentChartPage(ctx,market,slug){
   const key=String(slug||'').toUpperCase().replace(/[^A-Z0-9]/g,'');

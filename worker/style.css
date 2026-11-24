@@ -84,7 +84,7 @@
 .terminal-group i{display:inline-grid;place-items:center;flex:0 0 18px;height:18px}.terminal-group i img{width:16px;height:16px;object-fit:contain}.terminal-group i svg{display:block}.sharia-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.sharia-card{border:1px solid var(--terminal-line);border-top:3px solid var(--terminal-green);border-radius:8px;background:var(--terminal-panel);padding:15px}.sharia-card.haram{border-top-color:#e0656c}.sharia-card.mashbooh{border-top-color:#da9d41}.sharia-card h2{font-size:20px;margin:0}.sharia-card p,.sharia-card a{font-size:14px}.terminal-charts .chart-toolbar button:not(.secondary){background:transparent;color:var(--dim)}.terminal-charts .chart-toolbar button[aria-pressed=true]:not(.secondary){color:var(--terminal-green);background:color-mix(in srgb,var(--terminal-green) 12%,transparent)}
 @media(max-width:780px){.sharia-grid{grid-template-columns:1fr}}
 .terminal-charts .pro-chart{--chart-orange:#f78738}:root[data-theme=light] .terminal-charts .pro-chart{--chart-orange:#bc4b0b}.pro-chart canvas.chart-rsi{height:110px;border-top:1px solid var(--terminal-line);margin-top:0}.pro-chart canvas[hidden]{display:none}.terminal-charts [data-indicator=ema][aria-pressed=true]:not(.secondary){color:#3184da;border-color:#3184da}.terminal-charts [data-indicator=sma][aria-pressed=true]:not(.secondary),.terminal-charts [data-indicator=rsi][aria-pressed=true]:not(.secondary){color:#925abf;border-color:#925abf}
-.sharia-coin-list{margin:10px 0;padding:0;list-style:none}.sharia-coin-list li{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--terminal-line);font-size:13px}.sharia-coin-list img{width:19px;height:19px}.sharia-coin-list li small{margin-left:7px;color:var(--dim);font-size:10px}.sharia-card .sharia-coin-source,.sharia-card .sharia-coin-source a{font-size:11px}
+.sharia-coin-list{margin:10px 0;padding:0;list-style:none}.sharia-coin-list li{display:block;padding:0;border-top:1px solid var(--terminal-line);font-size:13px}.sharia-coin-list img{width:19px;height:19px}.sharia-coin-list li small{margin-left:7px;color:var(--dim);font-size:10px}.sharia-card .sharia-coin-source,.sharia-card .sharia-coin-source a{font-size:11px}
 .sentiment-board{max-width:820px;background:var(--terminal-panel)}.sentiment-main{display:flex;align-items:baseline;gap:6px}.sentiment-main strong{font-size:clamp(45px,8vw,74px);line-height:1;font-variant-numeric:tabular-nums}.sentiment-main span{color:var(--dim)}.sentiment-scale{position:relative;height:13px;border-radius:10px;margin:14px 6px 4px;background:linear-gradient(90deg,#bd434b,#e79d3d,#c7bf42,#2b996b)}.sentiment-scale i{position:absolute;top:-3px;width:5px;height:19px;border-radius:3px;background:var(--white);box-shadow:0 0 0 1px var(--terminal-panel);transform:translateX(-50%)}.sentiment-axis{display:flex;justify-content:space-between;font-size:11px;color:var(--dim)}.sentiment-board summary{cursor:pointer;font-weight:700;margin:8px 0}
 
 .reading-wide,.reading-wide .copy{max-width:none}
@@ -761,3 +761,27 @@ a.ed-market-pane:hover .ed-last{color:var(--orange)}
 .ed-tv-stage{height:max(520px,calc(100dvh - 280px));min-height:460px;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--panel)}
 .ed-tv-stage .tradingview-widget-container,.ed-tv-stage .tradingview-widget-container__widget{height:100%;width:100%}
 .ed-tv-stage .tradingview-widget-copyright{padding:6px 10px;font-size:12px}
+
+/* TradingView coin links sitewide */
+a.ed-coin-link,a.ed-coin-chart{color:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
+a.ed-coin-chart{color:var(--orange);flex:none;padding:4px;border-radius:8px}
+a.ed-coin-link:hover,a.ed-coin-chart:hover{color:var(--orange)}
+a.ed-coin-link .ed-row-affordance{margin-left:auto;color:var(--orange);opacity:.75}
+a.ed-coin-link:hover .ed-row-affordance{opacity:1}
+.sharia-coin-list a.ed-coin-link{display:flex;width:100%;padding:7px 6px;border-radius:8px;box-sizing:border-box}
+.sharia-coin-list a.ed-coin-link:hover{background:color-mix(in srgb,var(--orange) 8%,transparent)}
+.flow-asset-wrap{display:inline-flex;align-items:center;gap:2px;margin:0 6px 6px 0}
+.ed-coin-strip{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 16px}
+.ed-coin-strip a.ed-coin-link{padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+.ed-coin-strip a.ed-coin-link:hover{border-color:var(--orange)}
+.calendar-intro a.ed-coin-link{margin-top:12px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--panel);width:fit-content}
+.terminal-heading.bitcoin h1 a.ed-coin-link{color:inherit}
+.ed-market-quote .ed-row-affordance{margin-left:8px;color:var(--orange)}
+.fc-table .ed-chart-row:hover,.highlight-card .ed-chart-row:hover{background:color-mix(in srgb,var(--orange) 8%,transparent)}
+.fc-table a.ed-coin-link,.fc-table a.ed-row-fill,.highlight-card a.ed-row-fill{color:inherit;text-decoration:none}
+.highlight-card a.ed-coin-link{display:inline-flex;align-items:center;gap:8px}
+.btc-overview h2 a.ed-coin-link{color:inherit}
+.market-prices a.ed-coin-link,.market-prices a.ed-row-fill{color:inherit;text-decoration:none}
+.vz-panel a.ed-coin-link{margin-top:10px;font-weight:700}
+.heat-tile[data-chart-href]{cursor:pointer}
+.coin-strip a.ed-coin-link{display:flex}

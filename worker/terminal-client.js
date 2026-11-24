@@ -25,6 +25,15 @@
     const body=panel.querySelector(target);
     body.replaceChildren(...rows.map(items=>{
       const row=make('tr');
+      const first=items[0];
+      if(first&&first.tagName==='A'&&first.href){
+        row.className='ed-chart-row';
+        row.dataset.chartHref=first.href;
+        row.addEventListener('click',e=>{
+          if(e.target.closest('a,button,input')) return;
+          window.open(first.href,'_blank','noopener,noreferrer');
+        });
+      }
       for(const item of items){
         const cell=make('td');
         cell.append(item);
@@ -225,9 +234,16 @@ function liquidationPanel({panel,t,value,note,table,make,status,short}){
     return badge;
   }
   function eventAsset(asset){
-    const label=make('span');
-    label.className='liquidation-asset';
-    label.append(logo(asset),make('strong',asset));
+    const label=make('a');
+    label.className='ed-coin-link liquidation-asset';
+    label.href=tradingViewChartHref('crypto',asset);
+    label.target='_blank';
+    label.rel='noopener noreferrer';
+    const afford=make('span');
+    afford.className='ed-row-affordance';
+    afford.setAttribute('aria-hidden','true');
+    afford.innerHTML=chartArrowIcon();
+    label.append(logo(asset),make('strong',asset),afford);
     return label;
   }
   function tiles(rows,box,nodes){
@@ -239,6 +255,12 @@ function liquidationPanel({panel,t,value,note,table,make,status,short}){
       tile.className='heat-tile';
       tile.style.cssText='left:'+box.x+'%;top:'+box.y+'%;width:'+box.w+'%;height:'+box.h+'%;--tile:'+ (share>.65?'#11775e':share<.35?'#9b4050':'#47516a');
       tile.title=name+' · '+short(record.total)+' · '+Math.round(share*100)+'% longs';
+      if(name&&name!==t('Kale','Other')){
+        tile.style.cursor='pointer';
+        tile.dataset.chartHref=tradingViewChartHref('crypto',name);
+        tile.addEventListener('click',()=>window.open(tile.dataset.chartHref,'_blank','noopener,noreferrer'));
+      }
+
       if(box.w>7&&box.h>9){
         if(box.w>13&&box.h>18&&name!==t('Kale','Other'))tile.append(logo(name));
         tile.append(make('strong',name),make('span',short(record.total)));
@@ -622,6 +644,13 @@ function vzInitMarketTools(){
       const group=document.createElement('div'),caption=document.createElement('small'),figure=document.createElement('strong');
       caption.textContent=label;figure.textContent=value;group.append(caption,figure);detail.append(group);
     }
+    const chart=document.createElement('a');
+    chart.className='ed-coin-link';
+    chart.href=tradingViewChartHref('crypto',x.symbol);
+    chart.target='_blank';
+    chart.rel='noopener noreferrer';
+    chart.innerHTML=tr('Fur jaantuska TradingView','Open TradingView chart')+' '+chartArrowIcon();
+    detail.append(chart);
   }
   function arrange(){
     const width=field.clientWidth;

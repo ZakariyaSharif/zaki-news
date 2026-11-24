@@ -86,7 +86,7 @@ const coins = [
 const mark = '<svg viewBox="0 0 40 40" width="40" height="40" aria-hidden="true"><rect width="40" height="40" rx="9" fill="#ff854a"/><path d="M10 11h21L17 27h13v4H9l14-16H10z" fill="#171312"/><path d="M29 7h4v4h-4z" fill="#171312"/></svg>';
 function coinStrip() {
   return '<nav class="coin-strip" aria-label="Wararka lacagaha crypto">'+coins.map(([symbol,name])=>{
-    return '<a href="'+catUrl(name)+'">'+coinIcon(symbol)+'<span>'+name+'<small>'+symbol.toUpperCase()+'</small></span></a>';
+    return coinChartAnchor(symbol,coinIcon(symbol)+'<span>'+name+'<small>'+symbol.toUpperCase()+'</small></span>');
   }).join('')+'</nav>';
 }
 function authorPage(ctx) {

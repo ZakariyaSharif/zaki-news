@@ -68,7 +68,7 @@ const screenedCoins={
 };
 function coinScreenList(ctx,group){
   const [source,label]=coinScreeningSources[group.key];
-  const coins=screenedCoins[group.key].map(([symbol,name])=>'<li>'+coinIcon(symbol.toLowerCase())+'<span><strong>'+name+'</strong><small>'+symbol+'</small></span></li>').join('');
+  const coins=screenedCoins[group.key].map(([symbol,name])=>'<li>'+coinChartAnchor(symbol,coinIcon(symbol.toLowerCase())+'<span><strong>'+name+'</strong><small>'+symbol+'</small></span>')+'</li>').join('');
   return '<ul class="sharia-coin-list">'+coins+'</ul><p class="meta sharia-coin-source">'+t(ctx,'Isha','Source')+' · '+publicLink(source,label)+(group.key==='Haram'?' · '+publicLink('https://halalscreener.app/en/halal-crypto/lending-yield-and-derivatives','HalalScreener'):'')+'</p>';
 }
 function shariaPage(ctx){
@@ -117,7 +117,7 @@ async function sentimentPage(ctx){
   }catch{}
   const latest=data[0];
   const rows=data.slice(1).map(r=>'<tr><td>'+r.date+'</td><td>'+r.value+'</td><td>'+t(ctx,sentimentLabels[r.level],r.level)+'</td></tr>').join('');
-  const content='<div class="calendar-intro"><h1>'+title+'</h1><p>'+t(ctx,'Cabbirka maalinlaha ah ee dareenka suuqa Bitcoin.','Daily measure of Bitcoin market sentiment.')+'</p></div><section class="asset-board sentiment-board" data-feed="sentiment"><div class="sentiment-main"><strong data-sentiment-value>'+latest.value+'</strong><span>/ 100</span></div><h2 data-sentiment-level>'+t(ctx,sentimentLabels[latest.level],latest.level)+'</h2><div class="sentiment-scale" aria-hidden="true"><i data-sentiment-marker style="left:'+latest.value+'%"></i></div><div class="sentiment-axis"><span>'+t(ctx,'Cabsi aad u daran','Extreme Fear')+'</span><span>'+t(ctx,'Dhexdhexaad','Neutral')+'</span><span>'+t(ctx,'Damac aad u badan','Extreme Greed')+'</span></div><p class="feed-status">'+(snapshot?t(ctx,'Xogta kaydsan','Saved data'):t(ctx,'Taariikhda xogta','Index date'))+' · '+latest.date+'</p><p class="meta">'+publicLink(sentimentSource,'Alternative.me')+'</p><details open><summary>'+t(ctx,'Toddobadii maalmood ee hore','Previous seven days')+'</summary><div class="studio-table"><table><thead><tr><th>'+t(ctx,'Taariikh','Date')+'</th><th>'+t(ctx,'Dhibco','Score')+'</th><th>'+t(ctx,'Heerka','Classification')+'</th></tr></thead><tbody data-sentiment-history>'+rows+'</tbody></table></div></details></section>';
+  const content='<div class="calendar-intro"><h1>'+title+'</h1><p>'+t(ctx,'Cabbirka maalinlaha ah ee dareenka suuqa Bitcoin.','Daily measure of Bitcoin market sentiment.')+'</p>'+coinChartAnchor('BTC',coinIcon('btc')+'<span><strong>Bitcoin</strong><small>BTC</small></span>')+'</div><section class="asset-board sentiment-board" data-feed="sentiment"><div class="sentiment-main"><strong data-sentiment-value>'+latest.value+'</strong><span>/ 100</span></div><h2 data-sentiment-level>'+t(ctx,sentimentLabels[latest.level],latest.level)+'</h2><div class="sentiment-scale" aria-hidden="true"><i data-sentiment-marker style="left:'+latest.value+'%"></i></div><div class="sentiment-axis"><span>'+t(ctx,'Cabsi aad u daran','Extreme Fear')+'</span><span>'+t(ctx,'Dhexdhexaad','Neutral')+'</span><span>'+t(ctx,'Damac aad u badan','Extreme Greed')+'</span></div><p class="feed-status">'+(snapshot?t(ctx,'Xogta kaydsan','Saved data'):t(ctx,'Taariikhda xogta','Index date'))+' · '+latest.date+'</p><p class="meta">'+publicLink(sentimentSource,'Alternative.me')+'</p><details open><summary>'+t(ctx,'Toddobadii maalmood ee hore','Previous seven days')+'</summary><div class="studio-table"><table><thead><tr><th>'+t(ctx,'Taariikh','Date')+'</th><th>'+t(ctx,'Dhibco','Score')+'</th><th>'+t(ctx,'Heerka','Classification')+'</th></tr></thead><tbody data-sentiment-history>'+rows+'</tbody></table></div></details></section>';
   return layout(ctx,title,terminalShell(ctx,content),{terminal:'fear-greed'});
 }
 
@@ -265,7 +265,8 @@ function highlightRows(items){
     const image=highlightImage(item.image)?'<img alt="" width="20" height="20" loading="lazy" src="'+escape(item.image)+'">':'';
     const price=Number.isFinite(item.price)?new Intl.NumberFormat('en-US',{style:item.unit?'decimal':'currency',currency:'USD',maximumSignificantDigits:7}).format(item.price)+(item.unit?' '+item.unit:''):'—';
     const change=Number.isFinite(item.change)?(item.change>0?'+':'')+item.change.toFixed(1)+'%':'—';
-    return '<tr><th scope="row"><a href="'+escape(item.pool)+'" rel="noopener noreferrer">'+image+escape(item.name)+'</a></th><td>'+price+'</td><td data-direction="'+(item.change>0?'up':item.change<0?'down':'')+'">'+change+'</td></tr>';
+    const href=tradingViewChartHref('crypto',item.symbol||item.name);
+    return '<tr class="ed-chart-row" data-chart-href="'+escape(href)+'"><th scope="row">'+coinChartAnchor(item.symbol||item.name,image+escape(item.name))+'</th><td><a class="ed-row-fill" href="'+escape(href)+'" target="_blank" rel="noopener noreferrer">'+price+'</a></td><td data-direction="'+(item.change>0?'up':item.change<0?'down':'')+'"><a class="ed-row-fill" href="'+escape(href)+'" target="_blank" rel="noopener noreferrer">'+change+'</a></td></tr>';
   }).join('');
 }
 function highlightNote(ctx,card){
@@ -277,7 +278,7 @@ async function highlightsPage(ctx,title,db){
   const cards=highlightCards.map(([key,so,en,more])=>{
     const unlock=key==='unlocks';
     const card=saved[key];
-    const list=unlock?rows.map(row=>'<tr><th scope="row">'+coinIcon(row.title.split(/[ ·]/)[0].toLowerCase())+' '+escape(row.title)+'</th><td>'+escape(row.event_date)+'</td></tr>').join(''):card?highlightRows(card.items):'';
+    const list=unlock?rows.map(row=>{const sym=row.title.split(/[ ·]/)[0];const href=tradingViewChartHref('crypto',sym);return '<tr class="ed-chart-row" data-chart-href="'+escape(href)+'"><th scope="row">'+coinChartAnchor(sym,coinIcon(sym.toLowerCase())+'<span>'+escape(row.title)+'</span>')+'</th><td><a class="ed-row-fill" href="'+escape(href)+'" target="_blank" rel="noopener noreferrer">'+escape(row.event_date)+'</a></td></tr>';}).join(''):card?highlightRows(card.items):'';
     const empty=unlock?t(ctx,'Wax furitaan ah lama hayo.','No upcoming unlocks listed.'):card?t(ctx,'Ma jiraan lacagaha la raacay oo jihadan u dhaqaaqay 24-kii saac ee la soo dhaafay.','No tracked assets moved in this direction over the last 24 hours.'):t(ctx,'Xogta waa la soo rarayaa…','Loading data…');
     const name=key==='new'||key==='trending'?t(ctx,'Barkad','Pool'):'Coin';
     return '<section class="highlight-card"><header><h2>'+t(ctx,so,en)+'</h2>'+publicLink(unlock?editionHref(ctx,more):more,t(ctx,'Dheeraad','More')+' →')+'</header><table><thead><tr><th scope="col">'+name+'</th>'+(unlock?'<th scope="col">'+t(ctx,'Taariikh','Date')+'</th>':'<th scope="col">'+t(ctx,'Qiime','Price')+'</th><th scope="col">24h</th>')+'</tr></thead><tbody data-highlight="'+key+'" data-as-of="'+escape(card?.asOf||'')+'">'+(list||'<tr><td colspan="'+(unlock?2:3)+'">'+empty+'</td></tr>')+'</tbody></table>'+(!unlock?'<p class="meta highlight-note" data-highlight-note="'+key+'">'+(card?escape(highlightNote(ctx,card)):'')+'</p>':'')+'</section>';

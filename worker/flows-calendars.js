@@ -131,7 +131,11 @@ function fcLabel(ctx,status) {
   return status==='source'?t(ctx,'Isha la hubiyey','Source checked'):t(ctx,'Xog kaydsan oo la hubiyey','Verified reference snapshot');
 }
 function fcTable(headers,rows) {
-  return '<div class="fc-scroll"><table class="fc-table"><thead><tr>'+headers.map(x=>'<th scope="col">'+escape(x)+'</th>').join('')+'</tr></thead><tbody>'+rows.map(cols=>'<tr>'+cols.map(s=>'<td>'+s+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
+  return '<div class="fc-scroll"><table class="fc-table"><thead><tr>'+headers.map(x=>'<th scope="col">'+escape(x)+'</th>').join('')+'</tr></thead><tbody>'+rows.map(cols=>{
+    const attrs=cols&&!Array.isArray(cols)&&cols.cells?(cols.attrs||''):'';
+    const cells=cols&&!Array.isArray(cols)&&cols.cells?cols.cells:cols;
+    return '<tr'+attrs+'>'+cells.map(s=>'<td>'+s+'</td>').join('')+'</tr>';
+  }).join('')+'</tbody></table></div>';
 }
 function fcMillions(n,sign=false) {
   return (n<0?'−':sign&&n>0?'+':'')+'$'+new Intl.NumberFormat('en-US',{minimumFractionDigits:1,maximumFractionDigits:1}).format(Math.abs(n))+'M';
@@ -169,11 +173,11 @@ async function fcFlowPage(ctx,work) {
   if(flowReference[slug]?.length){initial.rows=flowReference[slug];initial.checked='2026-11-24';}
   const data=await fcData(ctx,'flows-v4/'+ticker,initial,()=>fcPublishedFlows(slug,url,initial.rows[0].date),work);
   const first=data.rows[0],title=t(ctx,'Qulqulka ETF-yada crypto','Crypto ETF flows');
-  const instruments=Object.entries(fcFunds).map(([k,[label]])=>('<a class="flow-asset" href="'+escape(editionHref(ctx,'/etf-flows?asset='+k))+'"'+(k===ticker?' aria-current="page"':'')+'>'+coinIcon(k.toLowerCase())+escape(label)+'</a>')).join('');
+  const instruments=Object.entries(fcFunds).map(([k,[label]])=>('<span class="flow-asset-wrap"><a class="flow-asset" href="'+escape(editionHref(ctx,'/etf-flows?asset='+k))+'"'+(k===ticker?' aria-current="page"':'')+'>'+coinIcon(k.toLowerCase())+escape(label)+'</a><a class="ed-coin-chart" '+tradingViewLinkAttrs('crypto',k,t(ctx,'Fur jaantuska '+k,'Open '+k+' chart'))+'>'+chartArrowIcon()+'</a></span>')).join('');
   const sideIn=t(ctx,'Lacagta soo gashay','Fund inflows'),sideOut=t(ctx,'Lacagta baxday','Fund outflows'),balance=t(ctx,'Farqiga saafiga ah','Net flow');
   const rows=data.rows.map(r=>[fcFmt(ctx,r.date)+(r.partial?' · '+t(ctx,'Qayb ahaan','Partial') : ''),fcMillions(r.inflow),fcMillions(r.outflow),fcRate(r.net)]);
   const figures=[[sideIn,'fc-plus',fcMillions(first.inflow)],[sideOut,'fc-minus',fcMillions(first.outflow)],[balance,first.net>=0?'fc-plus':'fc-minus',fcMillions(first.net,true)]].map(([label,cls,value])=>'<div><span>'+label+'</span><strong class="'+cls+'">'+value+'</strong></div>').join('');
-  const body='<header class="calendar-intro"><h1>'+title+'</h1><p>'+t(ctx,'Lacagta maalin kasta soo gasha ama ka baxda sanduuqyada crypto ee Maraykanka.','Daily subscriptions and redemptions across U.S. crypto funds.')+'</p></header><nav class="calendar-tabs" aria-label="'+t(ctx,'Hantida','Assets')+'">'+instruments+'</nav><script defer src="/etf-client.js"></script><section class="fc-board" data-etf="'+slug+'" data-session="'+first.date+'"><h2 class="flow-name">'+coinIcon(ticker.toLowerCase())+name+' · '+fcFmt(ctx,first.date)+(first.partial?' · '+t(ctx,'Qayb ahaan','Partial'):'')+'</h2><div class="fc-figures">'+figures+'</div><p class="meta">'+t(ctx,'Gelitaanka iyo bixitaanku waa wadarta dhaqdhaqaaqa saafiga ah ee sanduuq kasta. Qiimayaashu waa malaayiin doolar.','Inflows sum funds with positive net flow. Outflows sum the redemptions of funds with negative net flow. Figures are in millions of U.S. dollars.')+'</p>'+fcTable([t(ctx,'Maalinta suuqa','Trading session'),sideIn,sideOut,balance],rows)+'<p class="meta">'+fcLabel(ctx,data.mode)+' · '+fcFmt(ctx,data.checked)+' · '+publicLink(url,'Farside Investors')+'</p></section>';
+  const body='<header class="calendar-intro"><h1>'+title+'</h1><p>'+t(ctx,'Lacagta maalin kasta soo gasha ama ka baxda sanduuqyada crypto ee Maraykanka.','Daily subscriptions and redemptions across U.S. crypto funds.')+'</p></header><nav class="calendar-tabs" aria-label="'+t(ctx,'Hantida','Assets')+'">'+instruments+'</nav><script defer src="/etf-client.js"></script><section class="fc-board" data-etf="'+slug+'" data-session="'+first.date+'"><h2 class="flow-name">'+coinChartAnchor(ticker,coinIcon(ticker.toLowerCase())+'<span>'+name+'</span>')+' · '+fcFmt(ctx,first.date)+(first.partial?' · '+t(ctx,'Qayb ahaan','Partial'):'')+'</h2><div class="fc-figures">'+figures+'</div><p class="meta">'+t(ctx,'Gelitaanka iyo bixitaanku waa wadarta dhaqdhaqaaqa saafiga ah ee sanduuq kasta. Qiimayaashu waa malaayiin doolar.','Inflows sum funds with positive net flow. Outflows sum the redemptions of funds with negative net flow. Figures are in millions of U.S. dollars.')+'</p>'+fcTable([t(ctx,'Maalinta suuqa','Trading session'),sideIn,sideOut,balance],rows)+'<p class="meta">'+fcLabel(ctx,data.mode)+' · '+fcFmt(ctx,data.checked)+' · '+publicLink(url,'Farside Investors')+'</p></section>';
   return layout(ctx,title,terminalShell(ctx,body),{terminal:'etf-flows'});
 }
 function fcDateControls(ctx,type,selected) {

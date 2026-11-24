@@ -780,16 +780,34 @@ function renderHighlight(panel,section,card){
     body.replaceChildren(...card.items.map(item=>{
       const row=element('tr',''),heading=element('th',''),link=element('a',item.name);
       heading.scope='row';
-      link.href=item.pool;
+      const href=tradingViewChartHref('crypto',item.symbol||item.name);
+      row.className='ed-chart-row';
+      row.dataset.chartHref=href;
+      link.href=href;
+      link.target='_blank';
       link.rel='noopener noreferrer';
+      link.className='ed-coin-link';
       if(item.image&&(/^\/coin-logo\/[a-z0-9-]+\.(?:svg|png)$/.test(item.image)||/^https:\/\/(?:coin-images\.coingecko\.com|assets\.coingecko\.com|assets\.geckoterminal\.com|s2\.coinmarketcap\.com|static\.coinpaprika\.com)\//.test(item.image))){
         const image=document.createElement('img');
         image.src=item.image;image.alt='';image.loading='lazy';
         link.prepend(image);
       }
+      const afford=document.createElement('span');
+      afford.className='ed-row-affordance';
+      afford.setAttribute('aria-hidden','true');
+      afford.innerHTML=chartArrowIcon();
+      link.append(afford);
       heading.append(link);
-      const price=element('td',Number.isFinite(item.price)?new Intl.NumberFormat('en-US',{style:item.unit?'decimal':'currency',currency:'USD',maximumSignificantDigits:7}).format(item.price)+(item.unit?' '+item.unit:''):'—');
-      const change=element('td',Number.isFinite(item.change)?(item.change>0?'+':'')+item.change.toFixed(1)+'%':'—');
+      const priceText=Number.isFinite(item.price)?new Intl.NumberFormat('en-US',{style:item.unit?'decimal':'currency',currency:'USD',maximumSignificantDigits:7}).format(item.price)+(item.unit?' '+item.unit:''):'—';
+      const changeText=Number.isFinite(item.change)?(item.change>0?'+':'')+item.change.toFixed(1)+'%':'—';
+      const price=element('td',''),change=element('td','');
+      const priceLink=element('a',priceText),changeLink=element('a',changeText);
+      priceLink.href=changeLink.href=href;
+      priceLink.target=changeLink.target='_blank';
+      priceLink.rel=changeLink.rel='noopener noreferrer';
+      priceLink.className=changeLink.className='ed-row-fill';
+      price.append(priceLink);
+      change.append(changeLink);
       change.dataset.direction=item.change>0?'up':item.change<0?'down':'';
       row.append(heading,price,change);return row;
     }));

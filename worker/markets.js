@@ -238,11 +238,13 @@ function feeds(ctx,path,db){
 function ticker(ctx,table=false){
   const entries=(table?marketCoins:coins).map(([symbol,name])=>{
     const label=coinIcon(symbol)+'<strong>'+name+'</strong>';
-    const coin=table?label:'<a class="ticker-coin" href="'+editionHref(ctx,catUrl(name))+'">'+label+'</a>';
+    const href=tradingViewChartHref('crypto',symbol);
+    const attrs='href="'+escape(href)+'" target="_blank" rel="noopener noreferrer"';
+    const coin=coinChartAnchor(symbol,label);
     const quote=marketCoins.some(([marketSymbol])=>marketSymbol===symbol);
     return quote
-      ? '<div data-symbol="'+symbol+'">'+coin+'<span data-price>—</span><small data-change></small></div>'
-      : '<div>'+coin+'</div>';
+      ? '<div class="ed-chart-row" data-symbol="'+symbol+'" data-chart-href="'+escape(href)+'">'+coin+'<a class="ed-row-fill" '+attrs+'><span data-price>—</span></a><a class="ed-row-fill" '+attrs+'><small data-change></small></a></div>'
+      : '<div class="ed-chart-row" data-chart-href="'+escape(href)+'">'+coin+'</div>';
   }).join('');
   return '<section class="'+(table?'market-prices':'wrap live-ticker')+'" data-feed="prices" aria-label="'+t(ctx,'Qiimaha crypto','Crypto prices')+'">'+entries+'<small class="feed-status">'+t(ctx,'Qiimaha waa la soo raraya…','Loading prices…')+'</small></section>';
 }
@@ -341,7 +343,7 @@ function scheduleTable(ctx,rows,unlock){
   if(!rows.length) return '<p class="meta">'+t(ctx,'Weli dhacdo la xaqiijiyay ma jirto.','No verified events are listed yet.')+'</p>';
   const head=unlock?['Token',t(ctx,'Isha','Source'),t(ctx,'Waqtiga furitaanka','Unlock date / time'),t(ctx,'Qiimaha token-ka','Token price'),t(ctx,'Tirada','Amount'),t(ctx,'Qiimaha furitaanka','Unlock value'),t(ctx,'Sahayda wareegaysa (%)','Circulating supply (%)')]:[t(ctx,'Dhacdo','Event'),t(ctx,'Taariikh','Date')];
   const sourceCell=r=>'<td>'+publicLink(r.source,r.source===unlockSource?'Toolz':new URL(r.source).hostname.replace(/^www\./,''))+'</td>';
-  return '<div class="studio-table"><table><thead><tr>'+head.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr><td>'+(unlock?'<span class="unlock-coin">'+coinIcon((r.title.split(/[ ·]/)[0]||'').toLowerCase())+'<strong>'+escape(r.title)+'</strong></span>':publicLink(r.source,r.title))+'</td>'+(unlock?sourceCell(r)+unlockDetails(ctx,r):'<td>'+escape(r.event_date)+'</td>')+(unlock?'<td>'+(r.amount===null?'—':r.amount.toLocaleString('en-US'))+'</td><td data-unlock-amount="'+(r.amount??'')+'">'+(r.amount!=null&&unlockAsset((r.title.split(/[ ·]/)[0]||'').toUpperCase())?usd(r.amount*unlockAsset((r.title.split(/[ ·]/)[0]||'').toUpperCase())[1]):'—')+'</td><td>'+(r.supply===null?'—':r.supply+'%')+'</td>':'')+'</tr>').join('')+'</tbody></table></div>'+(unlock?'<p class="meta">'+publicLink('https://defillama.com/','DefiLlama')+' · '+t(ctx,'Gate wuxuu bixiyaa qiimaha USDT ee tooska ah. Qiimaha USD waxaa laga helaa DefiLlama.','Gate streams USDT trades. USD quotes come from DefiLlama. Unlock value equals the token amount multiplied by its latest quote.')+'</p>':'');
+  return '<div class="studio-table"><table><thead><tr>'+head.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr'+(unlock?' class="ed-chart-row" data-chart-href="'+escape(tradingViewChartHref('crypto',(r.title.split(/[ ·]/)[0]||'')))+'"':'')+'><td>'+(unlock?coinChartAnchor((r.title.split(/[ ·]/)[0]||''),'<span class="unlock-coin">'+coinIcon((r.title.split(/[ ·]/)[0]||'').toLowerCase())+'<strong>'+escape(r.title)+'</strong></span>'):publicLink(r.source,r.title))+'</td>'+(unlock?sourceCell(r)+unlockDetails(ctx,r):'<td>'+escape(r.event_date)+'</td>')+(unlock?'<td>'+(r.amount===null?'—':r.amount.toLocaleString('en-US'))+'</td><td data-unlock-amount="'+(r.amount??'')+'">'+(r.amount!=null&&unlockAsset((r.title.split(/[ ·]/)[0]||'').toUpperCase())?usd(r.amount*unlockAsset((r.title.split(/[ ·]/)[0]||'').toUpperCase())[1]):'—')+'</td><td>'+(r.supply===null?'—':r.supply+'%')+'</td>':'')+'</tr>').join('')+'</tbody></table></div>'+(unlock?'<p class="meta">'+publicLink('https://defillama.com/','DefiLlama')+' · '+t(ctx,'Gate wuxuu bixiyaa qiimaha USDT ee tooska ah. Qiimaha USD waxaa laga helaa DefiLlama.','Gate streams USDT trades. USD quotes come from DefiLlama. Unlock value equals the token amount multiplied by its latest quote.')+'</p>':'');
 }
 async function nextUnlocks(ctx,db){
   if(!enabled(ctx,'unlocks')) return '';
