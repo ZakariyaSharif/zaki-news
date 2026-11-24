@@ -575,6 +575,176 @@ function searchPage(ctx,stories,q){
     '<h1>'+escape(title)+'</h1>'+form+'</header>'+body+'</article>';
   return layout(ctx,title,page,{description:t(ctx,'Raadi maqaallada Zaki News.','Search Zaki News articles.'),noindex:true});
 }
+function suggestScore(hay,q){
+  const h=String(hay||'').toLowerCase();
+  const s=String(q||'').toLowerCase().trim();
+  if(!s||!h) return 0;
+  if(h===s) return 100;
+  if(h.startsWith(s)) return 86;
+  const words=h.split(/[^a-z0-9]+/).filter(Boolean);
+  if(words.some(w=>w===s)) return 78;
+  if(words.some(w=>w.startsWith(s))) return 64;
+  if(h.includes(s)) return 42;
+  return 0;
+}
+function suggestCoinCatalog(){
+  const map=new Map();
+  const add=(sym,name)=>{
+    const symbol=String(sym||'').toLowerCase();
+    if(!symbol||map.has(symbol)) return;
+    map.set(symbol,{symbol,name:String(name||symbol),ticker:symbol.toUpperCase()});
+  };
+  const lists=[typeof tickerCoins!=='undefined'?tickerCoins:[],typeof marketCoins!=='undefined'?marketCoins:[],typeof coins!=='undefined'?coins:[]];
+  if(typeof screenedCoins!=='undefined'){
+    Object.values(screenedCoins).forEach(rows=>lists.push(rows||[]));
+  }
+  for(const rows of lists){
+    for(const row of rows){ if(Array.isArray(row)&&row[0]) add(row[0],row[1]||row[0]); }
+  }
+  for(const token of ['NKP','TAC','REKT','CFG','HASHAI']) add(token,token);
+  return [...map.values()];
+}
+function suggestPageCatalog(ctx){
+  const seen=new Set();
+  const pages=[];
+  const add=(path,so,en)=>{
+    const href=editionHref(ctx,path);
+    if(seen.has(href)) return;
+    seen.add(href);
+    const title=t(ctx,so,en);
+    pages.push({path,href,title,hay:(so+' '+en+' '+path+' '+title).toLowerCase()});
+  };
+  if(typeof edFeaturedTools!=='undefined'&&typeof edToolMeta!=='undefined'){
+    for(const path of edFeaturedTools){
+      const meta=edToolMeta[path];
+      if(meta&&meta[0]) add(path,meta[0][0],meta[0][1]);
+    }
+  }
+  Object.entries(toolsNav||{}).forEach(([k,v])=>{
+    if(!enabled(ctx,k)) return;
+    add('/'+k,v[0],v[1]);
+  });
+  add('/markets','Suuqyada','Markets');
+  add('/sharia',shariaTitles[0],shariaTitles[1]);
+  add('/smart-money','Smart Money','Smart Money');
+  add('/etfs','ETF-yada','ETFs');
+  add('/ipo-calendar','Jadwalka IPO','IPO calendar');
+  add('/earnings-calendar','Jadwalka natiijooyinka','Earnings calendar');
+  add('/about','Nagu saabsan','About');
+  add('/resources','Xiriiriyeyaasha','Resources');
+  add('/videos','Muuqaallada','Videos');
+  add('/latest','Wararkii u dambeeyay','Latest');
+  add(catUrl('Crypto'),'Crypto','Crypto');
+  add(catUrl('Forex'),'Forex','Forex');
+  add(catUrl('Stocks'),categoryName({lang:'so'},'Stocks'),categoryName({lang:'en'},'Stocks'));
+  add(catUrl('Economy'),t(ctx,'Dhaqaalaha','Economy'),'Economy');
+  return pages;
+}
+async function peekCachedPrices(){
+  try{
+    if(typeof marketCache==='undefined') return {};
+    const entry=marketCache.get('prices');
+    if(!entry||!entry.value) return {};
+    const data=await Promise.race([Promise.resolve(entry.value),new Promise(r=>setTimeout(()=>r(null),40))]);
+    const items=data&&Array.isArray(data.items)?data.items:[];
+    const map={};
+    for(const it of items){
+      if(it&&it.symbol&&Number.isFinite(it.last)) map[String(it.symbol).toLowerCase()]=it;
+    }
+    return map;
+  }catch{return {};}
+}
+function suggestStoriesList(ctx,stories,q){
+  const s=String(q||'').trim().toLowerCase();
+  if(!s) return [];
+  if(s.length===1){
+    const lang=ctx.lang||'so';
+    return (stories||[]).filter(a=>{
+      const title=String(a.title||'').toLowerCase();
+      const slug=String(a.slug||'').toLowerCase();
+      return title.startsWith(s)||slug.startsWith(s)||title.split(/[\s,./-]+/).some(w=>w.startsWith(s));
+    }).sort((a,b)=>{
+      const al=(a.language||'so')===lang?0:1;
+      const bl=(b.language||'so')===lang?0:1;
+      if(al!==bl) return al-bl;
+      return String(b.published_at||'').localeCompare(String(a.published_at||''));
+    });
+  }
+  return rankedSearchStories(ctx,stories,q);
+}
+async function buildSearchSuggest(ctx,stories,q){
+  const query=String(q||'').trim().slice(0,100);
+  const allHref=editionHref(ctx,'/search')+(editionHref(ctx,'/search').includes('?')?'&':'?')+'q='+encodeURIComponent(query);
+  const empty={q:query,groups:[],allHref,seeAll:t(ctx,'Eeg dhammaan natiijooyinka “'+query+'”','See all results for “'+query+'”')};
+  if(!query) return empty;
+  const prices=await peekCachedPrices();
+  const aliases=coinSearchAliasMap();
+  const coins=suggestCoinCatalog().map(c=>{
+    const names=aliases[c.symbol]||[c.symbol,c.name.toLowerCase()];
+    const hay=[c.symbol,c.ticker,c.name,...names].join(' ');
+    const score=Math.max(suggestScore(c.symbol,query),suggestScore(c.ticker,query),suggestScore(c.name,query),...names.map(n=>suggestScore(n,query)));
+    if(!score) return null;
+    const quote=prices[c.symbol];
+    const file=coinFile(c.symbol);
+    return {
+      type:'coin',symbol:c.symbol,name:c.name,ticker:c.ticker,score,
+      logo:file?'/coin-logo/'+file:null,
+      price:quote?quote.last:null,
+      change:quote&&Number.isFinite(quote.change)?quote.change:null,
+      href:tradingViewChartHref('crypto',c.symbol),
+      external:true
+    };
+  }).filter(Boolean).sort((a,b)=>{
+    if(b.score!==a.score) return b.score-a.score;
+    const rank=sym=>{
+      const list=typeof tickerCoins!=='undefined'?tickerCoins:[];
+      const i=list.findIndex(row=>String(row[0]).toLowerCase()===sym);
+      return i>=0?i:1000;
+    };
+    const ra=rank(a.symbol), rb=rank(b.symbol);
+    if(ra!==rb) return ra-rb;
+    if(a.ticker.length!==b.ticker.length) return a.ticker.length-b.ticker.length;
+    return a.ticker.localeCompare(b.ticker);
+  });
+
+  const tools=suggestPageCatalog(ctx).map(p=>{
+    const score=Math.max(suggestScore(p.title,query),suggestScore(p.hay,query),suggestScore(p.path.replace(/[/-]/g,' '),query));
+    if(!score) return null;
+    return {type:'tool',title:p.title,href:p.href,score};
+  }).filter(Boolean).sort((a,b)=>b.score-a.score||a.title.localeCompare(b.title));
+
+  const storiesList=suggestStoriesList(ctx,stories,query).map((a,i)=>{
+    const score=Math.max(suggestScore(a.title,query),suggestScore(a.slug,query),200-i);
+    return {
+      type:'story',title:a.title,href:editionHref(ctx,storyUrl(a)),
+      thumb:a.image||null,category:categoryName(ctx,a.category),score
+    };
+  });
+
+  const pick=(arr,n)=>arr.slice(0,n);
+  const slots={coin:Math.min(3,coins.length),tool:Math.min(2,tools.length),story:Math.min(3,storiesList.length)};
+  let used=slots.coin+slots.tool+slots.story;
+  const leftovers=[
+    ...coins.slice(slots.coin),
+    ...tools.slice(slots.tool),
+    ...storiesList.slice(slots.story)
+  ].sort((a,b)=>b.score-a.score);
+  for(const item of leftovers){
+    if(used>=8) break;
+    if(item.type==='coin') slots.coin++;
+    else if(item.type==='tool') slots.tool++;
+    else slots.story++;
+    used++;
+  }
+  const groups=[];
+  const coinItems=pick(coins,slots.coin);
+  const toolItems=pick(tools,slots.tool);
+  const storyItems=pick(storiesList,slots.story);
+  if(coinItems.length) groups.push({id:'coins',label:t(ctx,'Lacagaha','Coins'),items:coinItems});
+  if(toolItems.length) groups.push({id:'tools',label:t(ctx,'Qalabka','Tools'),items:toolItems});
+  if(storyItems.length) groups.push({id:'stories',label:t(ctx,'Maqaallada','Stories'),items:storyItems});
+  return {...empty,groups};
+}
 function relatedTopicArticles(ctx,stories,category){
   if(category!=='Forex') return '';
   const related=(stories||[]).filter(a=>['Economy','Central Banks'].includes(canonicalCategory(a.category)));
