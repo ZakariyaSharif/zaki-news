@@ -1,0 +1,15 @@
+{
+  "framework": null,
+  "buildCommand": "npm run build",
+  "outputDirectory": "public",
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/api/site?__zaki_path=/"
+    },
+    {
+      "source": "/:path*",
+      "destination": "/api/site?__zaki_path=/:path*"
+    }
+  ]
+}

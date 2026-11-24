@@ -1,0 +1,467 @@
+{
+  "btc": [
+    {
+      "date": "2026-11-23",
+      "partial": false,
+      "inflow": 13.3,
+      "outflow": 583,
+      "net": -569.7
+    },
+    {
+      "date": "2026-11-20",
+      "partial": false,
+      "inflow": 2.3,
+      "outflow": 671.5,
+      "net": -669.2
+    },
+    {
+      "date": "2026-11-19",
+      "partial": false,
+      "inflow": 49.9,
+      "outflow": 632.1999999999999,
+      "net": -582.3
+    },
+    {
+      "date": "2026-11-18",
+      "partial": false,
+      "inflow": 0,
+      "outflow": 306.5,
+      "net": -306.5
+    },
+    {
+      "date": "2026-11-17",
+      "partial": false,
+      "inflow": 4,
+      "outflow": 243.89999999999998,
+      "net": -239.9
+    },
+    {
+      "date": "2026-11-16",
+      "partial": false,
+      "inflow": 76.5,
+      "outflow": 68.6,
+      "net": 7.9
+    },
+    {
+      "date": "2026-11-13",
+      "partial": false,
+      "inflow": 0,
+      "outflow": 185.4,
+      "net": -185.4
+    },
+    {
+      "date": "2026-11-12",
+      "partial": false,
+      "inflow": 3.3,
+      "outflow": 287.40000000000003,
+      "net": -284.1
+    },
+    {
+      "date": "2026-11-11",
+      "partial": false,
+      "inflow": 9,
+      "outflow": 308.8,
+      "net": -299.8
+    },
+    {
+      "date": "2026-11-10",
+      "partial": false,
+      "inflow": 20,
+      "outflow": 115,
+      "net": -95
+    },
+    {
+      "date": "2026-11-09",
+      "partial": false,
+      "inflow": 22.1,
+      "outflow": 223.1,
+      "net": -201
+    },
+    {
+      "date": "2026-11-06",
+      "partial": false,
+      "inflow": 42.8,
+      "outflow": 454.70000000000005,
+      "net": -411.9
+    },
+    {
+      "date": "2026-11-05",
+      "partial": false,
+      "inflow": 0,
+      "outflow": 430.19999999999993,
+      "net": -430.2
+    }
+  ],
+  "eth": [
+    {
+      "date": "2026-11-23",
+      "partial": false,
+      "inflow": 5.6,
+      "outflow": 90.5,
+      "net": -84.9
+    },
+    {
+      "date": "2026-11-20",
+      "partial": false,
+      "inflow": 0,
+      "outflow": 97.30000000000001,
+      "net": -97.3
+    },
+    {
+      "date": "2026-11-19",
+      "partial": false,
+      "inflow": 0,
+      "outflow": 131.2,
+      "net": -131.2
+    },
+    {
+      "date": "2026-11-18",
+      "partial": false,
+      "inflow": 0,
+      "outflow": 39.8,
+      "net": -39.8
+    },
+    {
+      "date": "2026-11-17",
+      "partial": false,
+      "inflow": 1.3,
+      "outflow": 30.400000000000002,
+      "net": -29.1
+    },
+    {
+      "date": "2026-11-16",
+      "partial": false,
+      "inflow": 1,
+      "outflow": 9.4,
+      "net": -8.4
+    },
+    {
+      "date": "2026-11-13",
+      "partial": false,
+      "inflow": 11.6,
+      "outflow": 9.3,
+      "net": 2.3
+    },
+    {
+      "date": "2026-11-12",
+      "partial": false,
+      "inflow": 1.6,
+      "outflow": 72.10000000000001,
+      "net": -70.5
+    },
+    {
+      "date": "2026-11-11",
+      "partial": false,
+      "inflow": 0,
+      "outflow": 144.80000000000004,
+      "net": -144.8
+    },
+    {
+      "date": "2026-11-10",
+      "partial": false,
+      "inflow": 1.1,
+      "outflow": 2.4,
+      "net": -1.3
+    },
+    {
+      "date": "2026-11-09",
+      "partial": false,
+      "inflow": 1.6,
+      "outflow": 186.2,
+      "net": -184.6
+    },
+    {
+      "date": "2026-11-06",
+      "partial": false,
+      "inflow": 1.1,
+      "outflow": 94.4,
+      "net": -93.3
+    },
+    {
+      "date": "2026-11-05",
+      "partial": false,
+      "inflow": 0,
+      "outflow": 99.9,
+      "net": -99.9
+    }
+  ],
+  "sol": [
+    {
+      "date": "2026-11-23",
+      "partial": false,
+      "inflow": 0,
+      "outflow": 3.8,
+      "net": -3.8
+    },
+    {
+      "date": "2026-11-20",
+      "partial": false,
+      "inflow": 0,
+      "outflow": 5.9,
+      "net": -5.9
+    },
+    {
+      "date": "2026-11-19",
+      "partial": false,
+      "inflow": 0,
+      "outflow": 1.1,
+      "net": -1.1
+    },
+    {
+      "date": "2026-11-18",
+      "partial": false,
+      "inflow": 0,
+      "outflow": 0,
+      "net": 0
+    },
+    {
+      "date": "2026-11-17",
+      "partial": false,
+      "inflow": 0,
+      "outflow": 0,
+      "net": 0
+    },
+    {
+      "date": "2026-11-16",
+      "partial": false,
+      "inflow": 11.700000000000001,
+      "outflow": 0,
+      "net": 11.7
+    },
+    {
+      "date": "2026-11-13",
+      "partial": false,
+      "inflow": 0,
+      "outflow": 3.1,
+      "net": -3.1
+    },
+    {
+      "date": "2026-11-12",
+      "partial": false,
+      "inflow": 1.7,
+      "outflow": 3.6,
+      "net": -1.9
+    },
+    {
+      "date": "2026-11-11",
+      "partial": false,
+      "inflow": 0,
+      "outflow": 5.9,
+      "net": -5.9
+    },
+    {
+      "date": "2026-11-10",
+      "partial": false,
+      "inflow": 0,
+      "outflow": 13.4,
+      "net": -13.4
+    },
+    {
+      "date": "2026-11-09",
+      "partial": false,
+      "inflow": 0,
+      "outflow": 7.7,
+      "net": -7.7
+    },
+    {
+      "date": "2026-11-06",
+      "partial": false,
+      "inflow": 0,
+      "outflow": 24.200000000000003,
+      "net": -24.2
+    },
+    {
+      "date": "2026-11-05",
+      "partial": false,
+      "inflow": 0,
+      "outflow": 0.8,
+      "net": -0.8
+    }
+  ],
+  "hyp": [
+    {
+      "date": "2026-11-23",
+      "partial": false,
+      "inflow": 0,
+      "outflow": 0,
+      "net": 0
+    },
+    {
+      "date": "2026-11-20",
+      "partial": false,
+      "inflow": 0,
+      "outflow": 1.7999999999999998,
+      "net": -1.8
+    },
+    {
+      "date": "2026-11-19",
+      "partial": false,
+      "inflow": 0,
+      "outflow": 1.9000000000000001,
+      "net": -1.9
+    },
+    {
+      "date": "2026-11-18",
+      "partial": false,
+      "inflow": 0,
+      "outflow": 2.3,
+      "net": -2.3
+    },
+    {
+      "date": "2026-11-17",
+      "partial": false,
+      "inflow": 0,
+      "outflow": 1.5,
+      "net": -1.5
+    },
+    {
+      "date": "2026-11-16",
+      "partial": false,
+      "inflow": 0,
+      "outflow": 7.9,
+      "net": -7.9
+    },
+    {
+      "date": "2026-11-13",
+      "partial": false,
+      "inflow": 0,
+      "outflow": 0,
+      "net": 0
+    },
+    {
+      "date": "2026-11-12",
+      "partial": false,
+      "inflow": 0,
+      "outflow": 0,
+      "net": 0
+    },
+    {
+      "date": "2026-11-11",
+      "partial": false,
+      "inflow": 0,
+      "outflow": 1.7,
+      "net": -1.7
+    },
+    {
+      "date": "2026-11-10",
+      "partial": false,
+      "inflow": 0,
+      "outflow": 0,
+      "net": 0
+    },
+    {
+      "date": "2026-11-09",
+      "partial": false,
+      "inflow": 0.8,
+      "outflow": 3.5,
+      "net": -2.7
+    },
+    {
+      "date": "2026-11-06",
+      "partial": false,
+      "inflow": 0,
+      "outflow": 8,
+      "net": -8
+    },
+    {
+      "date": "2026-11-05",
+      "partial": false,
+      "inflow": 0,
+      "outflow": 3,
+      "net": -3
+    }
+  ],
+  "zec": [
+    {
+      "date": "2026-11-23",
+      "partial": false,
+      "inflow": 4.6,
+      "outflow": 0,
+      "net": 4.6
+    },
+    {
+      "date": "2026-11-20",
+      "partial": false,
+      "inflow": 0,
+      "outflow": 5.8,
+      "net": -5.8
+    },
+    {
+      "date": "2026-11-19",
+      "partial": false,
+      "inflow": 0,
+      "outflow": 0.7,
+      "net": -0.7
+    },
+    {
+      "date": "2026-11-18",
+      "partial": false,
+      "inflow": 0,
+      "outflow": 1.9,
+      "net": -1.9
+    },
+    {
+      "date": "2026-11-17",
+      "partial": false,
+      "inflow": 0,
+      "outflow": 0,
+      "net": 0
+    },
+    {
+      "date": "2026-11-16",
+      "partial": false,
+      "inflow": 0,
+      "outflow": 9,
+      "net": -9
+    },
+    {
+      "date": "2026-11-13",
+      "partial": false,
+      "inflow": 0,
+      "outflow": 4.1,
+      "net": -4.1
+    },
+    {
+      "date": "2026-11-12",
+      "partial": false,
+      "inflow": 0,
+      "outflow": 9.9,
+      "net": -9.9
+    },
+    {
+      "date": "2026-11-11",
+      "partial": false,
+      "inflow": 0,
+      "outflow": 14.6,
+      "net": -14.6
+    },
+    {
+      "date": "2026-11-10",
+      "partial": false,
+      "inflow": 0,
+      "outflow": 0,
+      "net": 0
+    },
+    {
+      "date": "2026-11-09",
+      "partial": false,
+      "inflow": 0,
+      "outflow": 2.2,
+      "net": -2.2
+    },
+    {
+      "date": "2026-11-06",
+      "partial": false,
+      "inflow": 1.8,
+      "outflow": 0,
+      "net": 1.8
+    },
+    {
+      "date": "2026-11-05",
+      "partial": false,
+      "inflow": 0,
+      "outflow": 11,
+      "net": -11
+    }
+  ]
+}

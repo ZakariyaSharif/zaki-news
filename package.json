@@ -1,0 +1,15 @@
+{
+  "name": "zaki-news",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "24.x"
+  },
+  "scripts": {
+    "build": "bash scripts/build.sh",
+    "start": "node --env-file-if-exists=.env.local runtime/local.mjs",
+    "dev": "npm run build && npm start"
+  },
+  "dependencies": {}
+}

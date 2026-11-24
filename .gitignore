@@ -1,0 +1,7 @@
+dist/
+.dev.vars*
+
+.local/
+.env*
+.vercel/
+node_modules/

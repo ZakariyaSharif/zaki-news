@@ -1,0 +1,1 @@
+ALTER TABLE schedules ADD COLUMN country TEXT NOT NULL DEFAULT '';
