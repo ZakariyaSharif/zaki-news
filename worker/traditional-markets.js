@@ -98,9 +98,9 @@ function sentimentFeed(){
     catch{return {items:normalizeSentiment(sentimentSnapshot),snapshot:true};}
   });
 }
-const sentimentLabels={'Extreme Fear':'Cabsi aad u daran',Fear:'Cabsi',Neutral:'Dhexdhexaad',Greed:'Hunguri','Extreme Greed':'Hunguri aad u badan'};
+const sentimentLabels={'Extreme Fear':'Cabsi aad u daran',Fear:'Cabsi',Neutral:'Dhexdhexaad',Greed:'Damac','Extreme Greed':'Damac aad u badan'};
 async function sentimentPage(ctx){
-  const title='Crypto Fear & Greed Index';
+  const title=t(ctx,'Tusaha Cabsi iyo Damac ee Crypto','Crypto Fear & Greed Index');
   let data=normalizeSentiment(sentimentSnapshot),snapshot=true;
   try{
     const feed=await sentimentFeed();
@@ -111,7 +111,7 @@ async function sentimentPage(ctx){
   }catch{}
   const latest=data[0];
   const rows=data.slice(1).map(r=>'<tr><td>'+r.date+'</td><td>'+r.value+'</td><td>'+t(ctx,sentimentLabels[r.level],r.level)+'</td></tr>').join('');
-  const content='<div class="calendar-intro"><h1>'+title+'</h1><p>'+t(ctx,'Cabbirka maalinlaha ah ee dareenka suuqa Bitcoin.','Daily measure of Bitcoin market sentiment.')+'</p></div><section class="asset-board sentiment-board" data-feed="sentiment"><div class="sentiment-main"><strong data-sentiment-value>'+latest.value+'</strong><span>/ 100</span></div><h2 data-sentiment-level>'+t(ctx,sentimentLabels[latest.level],latest.level)+'</h2><div class="sentiment-scale" aria-hidden="true"><i data-sentiment-marker style="left:'+latest.value+'%"></i></div><div class="sentiment-axis"><span>'+t(ctx,'Cabsi aad u daran','Extreme Fear')+'</span><span>'+t(ctx,'Dhexdhexaad','Neutral')+'</span><span>'+t(ctx,'Hunguri aad u badan','Extreme Greed')+'</span></div><p class="feed-status">'+(snapshot?t(ctx,'Xogta kaydsan','Saved data'):t(ctx,'Taariikhda xogta','Index date'))+' · '+latest.date+'</p><p class="meta">'+publicLink(sentimentSource,'Alternative.me')+'</p><details open><summary>'+t(ctx,'Toddobadii maalmood ee hore','Previous seven days')+'</summary><div class="studio-table"><table><thead><tr><th>'+t(ctx,'Taariikh','Date')+'</th><th>'+t(ctx,'Dhibco','Score')+'</th><th>'+t(ctx,'Heerka','Classification')+'</th></tr></thead><tbody data-sentiment-history>'+rows+'</tbody></table></div></details></section>';
+  const content='<div class="calendar-intro"><h1>'+title+'</h1><p>'+t(ctx,'Cabbirka maalinlaha ah ee dareenka suuqa Bitcoin.','Daily measure of Bitcoin market sentiment.')+'</p></div><section class="asset-board sentiment-board" data-feed="sentiment"><div class="sentiment-main"><strong data-sentiment-value>'+latest.value+'</strong><span>/ 100</span></div><h2 data-sentiment-level>'+t(ctx,sentimentLabels[latest.level],latest.level)+'</h2><div class="sentiment-scale" aria-hidden="true"><i data-sentiment-marker style="left:'+latest.value+'%"></i></div><div class="sentiment-axis"><span>'+t(ctx,'Cabsi aad u daran','Extreme Fear')+'</span><span>'+t(ctx,'Dhexdhexaad','Neutral')+'</span><span>'+t(ctx,'Damac aad u badan','Extreme Greed')+'</span></div><p class="feed-status">'+(snapshot?t(ctx,'Xogta kaydsan','Saved data'):t(ctx,'Taariikhda xogta','Index date'))+' · '+latest.date+'</p><p class="meta">'+publicLink(sentimentSource,'Alternative.me')+'</p><details open><summary>'+t(ctx,'Toddobadii maalmood ee hore','Previous seven days')+'</summary><div class="studio-table"><table><thead><tr><th>'+t(ctx,'Taariikh','Date')+'</th><th>'+t(ctx,'Dhibco','Score')+'</th><th>'+t(ctx,'Heerka','Classification')+'</th></tr></thead><tbody data-sentiment-history>'+rows+'</tbody></table></div></details></section>';
   return layout(ctx,title,terminalShell(ctx,content),{terminal:'fear-greed'});
 }
 
@@ -190,7 +190,7 @@ function highlightRanking(){
       const backup=await (await pricesFeed()).json();
       items=(backup.items||[]).map(row=>{
         const asset=marketCoins.find(([key])=>key===row.symbol);
-        const logo=Object.keys(coinAssets).find(file=>file.startsWith(row.symbol+'.'));
+        const logo=coinFile(row.symbol);
         return {name:asset?.[1]||row.symbol,symbol:row.symbol,price:row.last,change:row.change,image:logo?'/coin-logo/'+logo:null,pool:'https://www.coinbase.com/advanced-trade/spot/'+encodeURIComponent(row.symbol.toUpperCase())+'-USD'};
       });
       source='Coinbase';

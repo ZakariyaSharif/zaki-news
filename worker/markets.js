@@ -51,10 +51,11 @@ function pricesFeed(){
       if(last<=0||open<=0||!Number.isFinite(last+open)) throw Error('Price unavailable');
       return {symbol,last,change:(last/open-1)*100,source:"Coinbase"};
     };
-    const prices=await Promise.allSettled(marketCoins.map(([symbol])=>exchangeQuote(symbol)));
+    const quoted=typeof tickerCoins!=='undefined'?tickerCoins:marketCoins;
+    const prices=await Promise.allSettled(quoted.map(([symbol])=>exchangeQuote(symbol)));
     const items=prices.filter(x=>x.status==='fulfilled').map(x=>x.value);
-    const ids={btc:'bitcoin',eth:'ethereum',sol:'solana',xrp:'ripple',bnb:'binancecoin',ada:'cardano',doge:'dogecoin',usdt:'tether'};
-    const missing=marketCoins.filter(([symbol])=>!items.some(q=>q.symbol===symbol));
+    const ids={btc:'bitcoin',eth:'ethereum',sol:'solana',xrp:'ripple',bnb:'binancecoin',ada:'cardano',doge:'dogecoin',usdt:'tether',link:'chainlink',avax:'avalanche-2',sui:'sui',trx:'tron',near:'near',ltc:'litecoin',atom:'cosmos',dot:'polkadot'};
+    const missing=quoted.filter(([symbol])=>!items.some(q=>q.symbol===symbol));
     if(missing.length){
       try {
         const url='https://api.coingecko.com/api/v3/simple/price?vs_currencies=usd&include_24hr_change=true&include_last_updated_at=true&ids='+missing.map(([symbol])=>ids[symbol]).join(',');

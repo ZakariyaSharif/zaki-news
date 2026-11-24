@@ -153,7 +153,7 @@ for(const panel of document.querySelectorAll('[data-feed]:not([data-feed="prices
   }).catch(()=>{});
   if(key==='sentiment')json('/data/fear-greed').then(({items,snapshot})=>{
     if(!items?.length)return;
-    const labels={'Extreme Fear':'Cabsi aad u daran',Fear:'Cabsi',Neutral:'Dhexdhexaad',Greed:'Hunguri','Extreme Greed':'Hunguri aad u badan'};
+    const labels={'Extreme Fear':'Cabsi aad u daran',Fear:'Cabsi',Neutral:'Dhexdhexaad',Greed:'Damac','Extreme Greed':'Damac aad u badan'};
     const [latest,...prior]=items;
     panel.querySelector('[data-sentiment-value]').textContent=latest.value;
     panel.querySelector('[data-sentiment-level]').textContent=t(labels[latest.level],latest.level);

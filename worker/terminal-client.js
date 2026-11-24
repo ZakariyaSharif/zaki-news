@@ -192,20 +192,36 @@ function liquidationPanel({panel,t,value,note,table,make,status,short}){
   }
   const updatePriceView=vzPriceView(panel,t,make,short,render);
   const aliases={XBT:'BTC',XDG:'DOGE','1000SHIB':'SHIB','1000PEPE':'PEPE','1000BONK':'BONK','1000FLOKI':'FLOKI'};
+  function localLogo(symbol){
+    const key=String(symbol||'').toUpperCase().replace(/^1000/,'');
+    return liquidationLogos[key]||liquidationLogos[String(symbol||'').toUpperCase()]||null;
+  }
   function logo(asset){
     const symbol=Object.hasOwn(aliases,asset)?aliases[asset]:asset;
     const badge=make('span');
     badge.className='liquidation-logo';
     badge.setAttribute('aria-hidden','true');
-    const path=Object.hasOwn(liquidationLogos,symbol)?liquidationLogos[symbol]:null;
-    if(!path)return badge;
-    const img=make('img');
-    img.src=path;
-    img.alt='';
-    img.width=32;
-    img.height=32;
-    img.addEventListener('error',()=>img.remove(),{once:true});
-    badge.append(img);
+    const path=localLogo(symbol);
+    if(path){
+      const img=make('img');
+      img.src=path;
+      img.alt='';
+      img.width=32;
+      img.height=32;
+      img.addEventListener('error',()=>{
+        img.remove();
+        const fallback=make('span');
+        fallback.className='coin-fallback';
+        fallback.textContent=String(symbol||'?').replace(/^1000/,'').slice(0,3);
+        badge.append(fallback);
+      },{once:true});
+      badge.append(img);
+      return badge;
+    }
+    const fallback=make('span');
+    fallback.className='coin-fallback';
+    fallback.textContent=String(symbol||'?').replace(/^1000/,'').slice(0,3);
+    badge.append(fallback);
     return badge;
   }
   function eventAsset(asset){
@@ -644,8 +660,26 @@ function vzInitMarketTools(){
       const button=document.createElement('button');button.type='button';button.className='vz-bubble secondary';button.dataset.sign=Math.sign(x.change);button.dataset.symbol=x.id;button.dataset.label=x.symbol;
       const label=document.createElement('strong');label.textContent=x.symbol;
       const change=document.createElement('span');change.textContent=(x.change>0?'+':'')+number(x.change,2)+'%';
-      const path=/^https:\/\/(coin-images|assets)\.coingecko\.com\//.test(x.image)?x.image:liquidationLogos[x.symbol];
-      if(path){const icon=document.createElement('img');icon.alt='';icon.src=path;icon.width=18;icon.height=18;button.append(icon);}
+      const path=/^https:\/\/(coin-images|assets)\.coingecko\.com\//.test(x.image)?x.image:localLogo(x.symbol);
+      if(path){
+        const icon=document.createElement('img');
+        icon.alt='';icon.src=path;icon.width=18;icon.height=18;
+        let retried=false;
+        icon.addEventListener('error',()=>{
+          const local=localLogo(x.symbol);
+          if(!retried&&local&&!icon.getAttribute('src').includes('/coin-logo/')){retried=true;icon.src=local;return;}
+          const fb=document.createElement('span');
+          fb.className='coin-fallback';
+          fb.textContent=String(x.symbol||'?').replace(/^1000/,'').slice(0,3);
+          icon.replaceWith(fb);
+        });
+        button.append(icon);
+      }else{
+        const fb=document.createElement('span');
+        fb.className='coin-fallback';
+        fb.textContent=String(x.symbol||'?').replace(/^1000/,'').slice(0,3);
+        button.append(fb);
+      }
       const price=document.createElement('small');price.dataset.spotPrice='';price.textContent=priceText(x);
       button.append(label,change,price);button.setAttribute('aria-label',detailFor(x));button.title=detailFor(x);
       button.dataset.weight=Math.sqrt(weight(x)/max);

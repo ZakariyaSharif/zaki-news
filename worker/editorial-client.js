@@ -95,30 +95,37 @@
     svg.addEventListener('mouseleave',hide);
   }
 
-  const ticker=document.querySelector('[data-ed-ticker]');
-  const ribbonPrice=document.querySelector('[data-ed-ribbon-price]');
+  const tickers=[...document.querySelectorAll('[data-ed-ticker], [data-ed-price-ticker]')];
   async function fillPrices(){
     try{
       const res=await fetch('/data/prices');
       if(!res.ok) return;
       const {items}=await res.json();
       const usd=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:n<1?4:2}).format(n);
-      for(const row of (ticker?ticker.querySelectorAll('[data-symbol]'):[])){
-        const item=items.find(x=>x.symbol===row.dataset.symbol);
-        if(!item) continue;
-        const price=row.querySelector('[data-price]');
-        const change=row.querySelector('[data-change]');
-        if(price) price.textContent=usd(item.last);
-        if(change){
-          change.textContent=(item.change>=0?'+':'')+item.change.toFixed(2)+'%';
-          change.dataset.direction=item.change>=0?'up':'down';
+      for(const ticker of tickers){
+        for(const row of ticker.querySelectorAll('[data-symbol]')){
+          const item=items.find(x=>x.symbol===row.dataset.symbol);
+          if(!item) continue;
+          const price=row.querySelector('[data-price]');
+          const change=row.querySelector('[data-change]');
+          if(price) price.textContent=usd(item.last);
+          if(change){
+            change.textContent=(item.change>=0?'+':'')+item.change.toFixed(2)+'%';
+            change.dataset.direction=item.change>=0?'up':'down';
+          }
         }
-      }
-      const btc=items.find(x=>x.symbol==='btc');
-      if(ribbonPrice && btc){
-        ribbonPrice.textContent='Bitcoin '+usd(btc.last);
       }
     }catch{}
   }
   fillPrices();
+  setInterval(()=>{if(!document.hidden)fillPrices();},45000);
+  const strip=document.querySelector('[data-ed-price-ticker]');
+  if(strip){
+    const pause=()=>strip.classList.add('is-paused');
+    const resume=()=>strip.classList.remove('is-paused');
+    strip.addEventListener('mouseenter',pause);
+    strip.addEventListener('mouseleave',resume);
+    strip.addEventListener('pointerdown',pause);
+    strip.addEventListener('pointerup',resume);
+  }
 })();

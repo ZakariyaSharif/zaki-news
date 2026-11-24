@@ -5,7 +5,7 @@ const profileFields = {
   email:['Iimaylka dadweynaha',254], phone:['Telefoonka dadweynaha',40], legalName:['Magaca ganacsiga ama daabacaha',150],
   address:['Cinwaanka ganacsiga',250], registration:['Lambarka diiwaangelinta ama VAT',100], website:['Bogga internetka',1000]
 };
-const defaultProfile = {author:'',bio:'',photo:'',email:'info@zakariyaacademy.com',website:academy,youtube:channel,x:'https://x.com/zakariyasharif9',instagram:'https://www.instagram.com/zakariya__sharif/',facebook:'https://www.facebook.com/official.zakariya.sharif',tiktok:'https://www.tiktok.com/@zakariyaacademy',telegram:'https://t.me/ZakariyaAcademy1',substack:'https://substack.com/@zakariyasharif'};
+const defaultProfile = {author:'',bio:'',photo:'',email:'info@zakariyaacademy.com',website:academy,youtube:channel,x:'https://x.com/zakariyasharif9',instagram:'https://www.instagram.com/zakariya__sharif/',facebook:'https://www.facebook.com/official.zakariya.sharif',tiktok:'https://www.tiktok.com/@zakariyaacademy',telegram:'https://t.me/ZakariyaAcademy1',substack:'https://substack.com/@zakariyasharif',discord:'https://discord.gg/g2kBMMA9TC'};
 const validEmail = value => /^[\w.!#$%&'*+/=?^`{|}~-]+@[\w-]+(?:\.[\w-]+)+$/.test(value);
 const publisherNav = '<nav class="publisher-nav" aria-label="Maamulka"><a href="/studio">Maqaallada</a><a href="/studio?panel=videos">Muuqaallada · Videos</a><a href="/studio?panel=profile">Qoraaga iyo xiriirrada</a><a href="/studio?panel=inbox">Farriimaha</a><a href="/signout-with-chatgpt?returnTo=%2F" target="_top">Ka bax</a></nav>';
 const publicLink = (url,label) => '<a href="'+escape(url)+'" rel="noopener noreferrer">'+escape(label)+'</a>';
@@ -86,8 +86,7 @@ const coins = [
 const mark = '<svg viewBox="0 0 40 40" width="40" height="40" aria-hidden="true"><rect width="40" height="40" rx="9" fill="#ff854a"/><path d="M10 11h21L17 27h13v4H9l14-16H10z" fill="#171312"/><path d="M29 7h4v4h-4z" fill="#171312"/></svg>';
 function coinStrip() {
   return '<nav class="coin-strip" aria-label="Wararka lacagaha crypto">'+coins.map(([symbol,name])=>{
-    const asset = Object.keys(coinAssets).find(file=>file.startsWith(symbol+'.'));
-    return '<a href="'+catUrl(name)+'">'+(asset?'<img alt="" width="25" height="25" src="/coin-logo/'+asset+'">':'')+'<span>'+name+'<small>'+symbol.toUpperCase()+'</small></span></a>';
+    return '<a href="'+catUrl(name)+'">'+coinIcon(symbol)+'<span>'+name+'<small>'+symbol.toUpperCase()+'</small></span></a>';
   }).join('')+'</nav>';
 }
 function authorPage(ctx) {

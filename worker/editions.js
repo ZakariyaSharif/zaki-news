@@ -10,12 +10,47 @@ const t = (ctx,so,en) => ctx.lang==='en'?en:so;
 const enabled = (ctx,key) => ctx.sections?.[key]!==false;
 const editionHref = (ctx,path) => path==='/' ? '/'+ctx.lang : ctx.lang==='en' ? path+(path.includes('?')?'&':'?')+'lang=en' : path;
 const marketCoins = coins;
+const tickerCoins = marketCoins.concat([
+  ['link','Chainlink'],['avax','Avalanche'],['sui','Sui'],['trx','TRON'],
+  ['near','NEAR'],['ltc','Litecoin'],['atom','Cosmos'],['dot','Polkadot']
+].filter(([symbol])=>!marketCoins.some(([key])=>key===symbol)));
+function editorialTicker(ctx){
+  const item=([symbol,name])=>'<a class="ed-tick-item" data-symbol="'+symbol+'" href="'+editionHref(ctx,'/charts?coin='+symbol)+'">'+
+    coinIcon(symbol)+
+    '<span class="ed-tick-name">'+escape(name)+'</span>'+
+    '<span class="ed-tick-sym">'+symbol.toUpperCase()+'</span>'+
+    '<span class="ed-tick-price" data-price>—</span>'+
+    '<span class="ed-tick-chg" data-change></span>'+
+  '</a>';
+  const row=tickerCoins.map(item).join('');
+  return '<div class="ed-ticker" data-ed-price-ticker data-ed-ticker aria-label="'+t(ctx,'Qiimaha crypto tooska ah','Live crypto prices')+'">'+
+    '<div class="ed-ticker-track">'+row+row+'</div></div>';
+}
+const coinIconAliases={xbt:'btc',xdg:'doge',matic:'pol',rndr:'render',polygon:'pol',weth:'eth',toncoin:'ton'};
+function coinFile(symbol){
+  const raw=String(symbol||'').trim().toLowerCase();
+  const compact=raw.replace(/[^a-z0-9]/g,'');
+  const stripped=raw.replace(/^1000/,'').replace(/[^a-z0-9]/g,'');
+  const candidates=[raw,compact,raw.replace(/^1000/,''),stripped,coinIconAliases[raw],coinIconAliases[compact],coinIconAliases[stripped]].filter(Boolean);
+  const names=Object.keys(coinAssets);
+  for(const key of candidates){
+    const file=names.find(name=>name.toLowerCase().startsWith(key+'.'));
+    if(file) return file;
+  }
+  return null;
+}
+function coinFallbackGlyph(symbol){
+  const letters=escape(String(symbol||'?').replace(/^1000/i,'').replace(/[^a-z0-9]/gi,'').slice(0,3).toUpperCase()||'?');
+  return '<span class="coin-fallback" aria-hidden="true">'+letters+'</span>';
+}
 function coinIcon(symbol){
-  const file=Object.keys(coinAssets).find(name=>name.startsWith(symbol+'.'));
-  return file?'<img src="/coin-logo/'+file+'" alt="" width="25" height="25">':'';
+  const file=coinFile(symbol);
+  const letters=escape(String(symbol||'?').replace(/^1000/i,'').replace(/[^a-z0-9]/gi,'').slice(0,3).toUpperCase()||'?');
+  if(!file) return coinFallbackGlyph(symbol);
+  return '<img class="coin-logo" src="/coin-logo/'+file+'" alt="" width="25" height="25" loading="lazy" onerror="this.outerHTML=\'<span class=coin-fallback aria-hidden=true>'+letters+'</span>\'">';
 }
 function sectionNav(ctx){
-  return '<nav class="wrap nav market-nav" aria-label="'+t(ctx,'Xogta suuqa','Market data')+'"><a href="'+editionHref(ctx,'/etf-flows')+'">'+t(ctx,'Qulqulka ETF-yada crypto','Crypto ETF flows')+'</a>'+Object.entries(toolsNav).filter(([k])=>enabled(ctx,k)).map(([k,v])=>'<a href="'+editionHref(ctx,'/'+k)+'">'+t(ctx,...v)+'</a>').join('')+'<a href="'+editionHref(ctx,'/etfs')+'">'+t(ctx,'ETF-yada','ETFs')+'</a><a href="'+editionHref(ctx,'/fear-greed')+'">'+t(ctx,'Cabsi iyo Hunguri','Fear &amp; Greed')+'</a></nav>';
+  return '<nav class="wrap nav market-nav" aria-label="'+t(ctx,'Xogta suuqa','Market data')+'"><a href="'+editionHref(ctx,'/etf-flows')+'">'+t(ctx,'Qulqulka ETF-yada crypto','Crypto ETF flows')+'</a>'+Object.entries(toolsNav).filter(([k])=>enabled(ctx,k)).map(([k,v])=>'<a href="'+editionHref(ctx,'/'+k)+'">'+t(ctx,...v)+'</a>').join('')+'<a href="'+editionHref(ctx,'/etfs')+'">'+t(ctx,'ETF-yada','ETFs')+'</a><a href="'+editionHref(ctx,'/fear-greed')+'">'+t(ctx,'Cabsi iyo Damac','Fear &amp; Greed')+'</a></nav>';
 }
 function newsletter(ctx,compact=false){
   if(!enabled(ctx,'newsletter')) return '';
@@ -152,7 +187,7 @@ function footerLangPills(ctx){
   return '<nav class="footer-langs" aria-label="'+label+'">'+item('so')+item('en')+'</nav>';
 }
 function footerSocials(profile){
-  const order=['youtube','x','instagram','facebook','tiktok','telegram','substack'];
+  const order=['youtube','x','instagram','facebook','tiktok','telegram','substack','discord'];
   return '<nav class="footer-socials" aria-label="Social">'+order.filter(key=>profile[key]).map(key=>{
     const label=socialLabels[key]||key;
     const icon=socialAssets[key]?'<img src="/social-logo/'+key+'.svg" width="20" height="20" alt="">':'';
@@ -196,7 +231,7 @@ function siteFooter(ctx){
     ['/smart-money',['Smart Money','Smart Money']],
     ['/liquidations',['Likwideeynta','Liquidations']],
     ['/unlocks',['Furitaanka tokennada','Token unlocks']],
-    ['/fear-greed',['Cabsi iyo Hunguri','Fear &amp; Greed']],
+    ['/fear-greed',['Cabsi iyo Damac','Fear &amp; Greed']],
     ['/profit-calculator',['Xisaabiyaha faa’iidada','Profit calculator']],
     ['https://zakibubble.zakariyaacademy.com',['Goobooyinka crypto','Crypto bubbles'],true],
     ['/halving',['Bitcoin halving','Bitcoin halving']],
@@ -255,7 +290,7 @@ const edToolMeta={
   '/profit-calculator':[['Xisaabiyaha faa’iidada','Profit calculator'],['Xisaabi faa’iidada iibka','Work out a trade’s return'],'<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h4"/>'],
   '/unlocks':[['Furitaanka tokennada','Token unlocks'],['Furitaanka tokennada soo socda','Upcoming token unlocks'],'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>'],
   '/liquidations':[['Likwideeynta','Liquidations'],['Khariidadda likwideynta','Exchange liquidation map'],'<path d="M12 3v10"/><path d="M8 9l4 4 4-4"/><path d="M5 21h14"/>'],
-  '/fear-greed':[['Cabsi iyo Hunguri','Fear &amp; Greed'],['Tusaha cabsi iyo hunguri','Market sentiment index'],'<circle cx="12" cy="12" r="8"/><path d="M8 14c1.2 1.6 2.6 2.3 4 2.3s2.8-.7 4-2.3"/>'],
+  '/fear-greed':[['Cabsi iyo Damac','Fear &amp; Greed'],['Tusaha cabsi iyo damac','Market sentiment index'],'<circle cx="12" cy="12" r="8"/><path d="M8 14c1.2 1.6 2.6 2.3 4 2.3s2.8-.7 4-2.3"/>'],
   '/calendar':[['Jadwalka dhaqaalaha','Economic calendar'],['Jadwalka warbixinnada dhaqaalaha','Economic release calendar'],'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/>'],
   '/halving':[['Bitcoin halving','Bitcoin halving'],['Jadwalka soo saarista Bitcoin','Bitcoin issuance schedule'],'<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/>'],
   '/highlights':[['Muuqaalka suuqa','Crypto highlights'],['Lammaanaha ugu dhaqsaha badan','Fast-moving crypto pairs'],'<polygon points="12 3 14.5 9 21 9.5 16 14 17.5 21 12 17.5 6.5 21 8 14 3 9.5 9.5 9"/>'],
@@ -356,13 +391,10 @@ function editorialHeader(ctx){
   }).join('');
   const follow=[
     (ctx.profile.website||academy)?'<a href="'+escape(ctx.profile.website||academy)+'" rel="noopener noreferrer" target="_blank">Zakariya Academy ↗</a>':'',
-    ctx.profile.youtube?'<a href="'+escape(ctx.profile.youtube)+'" rel="noopener noreferrer" target="_blank">YouTube ↗</a>':''
+    ctx.profile.youtube?'<a href="'+escape(ctx.profile.youtube)+'" rel="noopener noreferrer" target="_blank">YouTube ↗</a>':'',
+    ctx.profile.discord?'<a href="'+escape(ctx.profile.discord)+'" rel="noopener noreferrer" target="_blank">Discord ↗</a>':''
   ].filter(Boolean).join('');
   const kicker=t(ctx,'Warbaahinta maaliyadeedka Soomaaliyeed','Somali financial journalism');
-  const ribbon=t(ctx,'so','en')==='en'
-    ? ['Today’s market prices','Analysis, data and insight','Somali financial news','Independent · Somali and English']
-    : ['Qiimaha suuqyada maanta','Falanqayn, xog iyo aragtiyo','Wararka maaliyadda Soomaaliyeed','Madax-bannaan · Af-Soomaali iyo English'];
-  const ribbonHtml=('<span>'+ribbon.join(' <i>•</i> ')+' <i>•</i> <span data-ed-ribbon-price></span></span>').repeat(2);
   const searchIcon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>';
   const chevron='<svg class="ed-chevron" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M2 4l4 4 4-4"/></svg>';
   const searchForm='<form class="ed-search" role="search" action="/search">'+
@@ -398,16 +430,11 @@ function editorialHeader(ctx){
         '</button>'+
       '</div>'+searchForm+
     '</div>'+
-    '<div class="ed-ribbon" aria-hidden="true"><div class="ed-ribbon-track">'+ribbonHtml+'</div></div>'+
     '<nav class="wrap ed-nav" aria-label="'+t(ctx,'Qaybaha','Sections')+'">'+
       primary.map(([p,l])=>edA(ctx,p,l)).join('')+
       '<button type="button" class="ed-more" data-ed="more" aria-expanded="false" aria-controls="ed-mega">'+t(ctx,'Dheeraad','More')+' '+chevron+'</button>'+
     '</nav>'+mega+
-    '<div class="ed-mob-ticker" data-ed-ticker>'+
-      '<a data-symbol="btc" href="'+editionHref(ctx,'/charts?coin=btc')+'"><strong>BTC</strong> <span data-price>—</span> <span data-change></span></a>'+
-      '<a data-symbol="eth" href="'+editionHref(ctx,'/charts?coin=eth')+'"><strong>ETH</strong> <span data-price>—</span> <span data-change></span></a>'+
-    '</div>'+
-  '</header>'+sheet;
+  '</header>'+editorialTicker(ctx)+sheet;
 }
 function editorialHome(ctx, list, snapshot){
   const lead=list[0];
@@ -420,7 +447,10 @@ function editorialHome(ctx, list, snapshot){
   const items=rest.map(a=>{
     const when=a.sample?'':date(a.published_at,ctx.lang);
     const mins=t(ctx, wordCount(a)+' daqiiqo', wordCount(a)==1?'1 min':wordCount(a)+' min');
-    return '<li><a href="'+storyUrl(a)+'"><h3>'+escape(a.title)+'</h3><span class="ed-item-meta">'+clock+' '+mins+(when?' <i>·</i> '+when:'')+'</span></a></li>';
+    const thumb=a.image
+      ? '<img class="ed-item-thumb" src="'+escape(a.image)+'" alt="'+escape(a.image_alt||'')+'" width="96" height="72" loading="lazy">'
+      : '<span class="ed-item-thumb ed-item-thumb-empty" aria-hidden="true"></span>';
+    return '<li><a href="'+storyUrl(a)+'">'+thumb+'<span class="ed-item-copy"><h3>'+escape(a.title)+'</h3><span class="ed-item-meta">'+clock+' '+mins+(when?' <i>·</i> '+when:'')+'</span></span></a></li>';
   }).join('');
   return '<div class="ed-home">'+
     '<section class="ed-hero">'+
