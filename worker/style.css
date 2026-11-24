@@ -424,13 +424,16 @@ button.ed-search-submit{
 .ed-more{display:inline-flex;align-items:center;gap:5px}
 .ed-more[aria-expanded=true] .ed-chevron{transform:rotate(180deg)}
 .ed-chevron{width:10px;height:10px;transition:transform .2s ease}
-.ed-mega{position:absolute;left:50%;transform:translateX(-50%);top:100%;width:min(1100px,calc(100vw - 32px));z-index:8;display:grid;grid-template-columns:220px 1fr;gap:28px;padding:26px 28px 20px;background:var(--panel);border:1px solid var(--line);border-radius:0 0 18px 18px;box-shadow:var(--shadow)}
+.ed-mega{position:absolute;left:50%;transform:translateX(-50%);top:100%;width:min(1180px,calc(100vw - 32px));z-index:8;display:grid;grid-template-columns:1fr;gap:18px;padding:22px 26px 20px;background:var(--panel);border:1px solid var(--line);border-radius:0 0 18px 18px;box-shadow:var(--shadow)}
 .ed-mega[hidden]{display:none}
 .ed-mega h2,.ed-sheet-block h2{margin:0 0 12px;font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
-.ed-mega-topics nav{display:flex;flex-direction:column;gap:2px}
-.ed-mega-topics a,.ed-sheet-block nav a{display:block;padding:8px 10px;border-radius:8px;color:var(--ink);text-decoration:none;font-size:14px;font-weight:600}
-.ed-mega-topics a:hover,.ed-mega-topics a.is-active{background:color-mix(in srgb,var(--orange) 10%,transparent);color:var(--ink)}
-.ed-tool-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.ed-mega-overflow{padding-bottom:4px;border-bottom:1px solid var(--line)}
+.ed-mega-overflow[hidden]{display:none}
+.ed-mega-overflow h2{margin-bottom:8px}
+.ed-mega-overflow nav{display:flex;flex-wrap:wrap;gap:4px 6px}
+.ed-mega-overflow a,.ed-sheet-block nav a{display:inline-flex;align-items:center;padding:6px 10px;border-radius:8px;color:var(--ink);text-decoration:none;font-size:14px;font-weight:600}
+.ed-mega-overflow a:hover,.ed-mega-overflow a.is-active{background:color-mix(in srgb,var(--orange) 10%,transparent);color:var(--ink)}
+.ed-tool-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
 .ed-tool{display:flex;gap:10px;align-items:flex-start;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);text-decoration:none;min-height:72px}
 .ed-tool:hover{border-color:color-mix(in srgb,var(--orange) 45%,var(--line))}
 .ed-tool-icon{flex:0 0 32px;width:32px;height:32px;display:grid;place-items:center;border-radius:9px;background:color-mix(in srgb,var(--orange) 12%,transparent);color:var(--orange)}
@@ -667,14 +670,16 @@ html.ed-locked,html.ed-locked body{overflow:hidden}
 .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 main:has(.about-page),main:has(.ed-search-page),main:has(.ed-chart-page){min-height:0;padding-bottom:48px}
 
-/* Clickable market / forex rows */
-.ed-chart-row{position:relative;cursor:pointer;transition:background .15s ease}
+/* Clickable market / forex rows: real anchors fill each cell */
+.ed-chart-row{cursor:pointer;transition:background .15s ease}
 .ed-chart-row:hover,.ed-chart-row:focus-within{background:color-mix(in srgb,var(--orange) 8%,var(--bg))}
-.ed-chart-row .ed-row-affordance{margin-left:10px;display:inline-flex;align-items:center;color:var(--orange);opacity:.75;vertical-align:middle}
-.ed-chart-row:hover .ed-row-affordance{opacity:1}
-.ed-row-link-cell{padding:0 !important;border:0 !important;width:0;position:relative}
-.ed-row-link{position:absolute;inset:0;z-index:1}
-.studio-table .ed-row-link,.md-quotes .ed-row-link{color:transparent}
+.ed-chart-row :is(th,td){padding:0 !important}
+.ed-chart-row a.ed-row-pair,.ed-chart-row a.ed-row-fill{
+  display:flex;align-items:center;gap:8px;padding:12px;color:inherit;text-decoration:none;width:100%;min-height:100%;box-sizing:border-box
+}
+.studio-table .ed-chart-row a,.md-quotes .ed-chart-row a{color:inherit}
+.ed-chart-row .ed-row-affordance{margin-left:auto;display:inline-flex;align-items:center;color:var(--orange);opacity:.75;flex:none}
+.ed-chart-row:hover .ed-row-affordance,.ed-chart-row:focus-within .ed-row-affordance{opacity:1}
 a.ed-market-pane{color:inherit;text-decoration:none;display:block}
 a.ed-market-pane:hover .ed-last{color:var(--orange)}
 

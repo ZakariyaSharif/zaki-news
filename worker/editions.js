@@ -9,13 +9,22 @@ const switchLabels={...toolsNav,ticker:['Qiimaha tooska ah','Price ticker'],news
 const t = (ctx,so,en) => ctx.lang==='en'?en:so;
 const enabled = (ctx,key) => ctx.sections?.[key]!==false;
 const editionHref = (ctx,path) => path==='/' ? '/'+ctx.lang : ctx.lang==='en' ? path+(path.includes('?')?'&':'?')+'lang=en' : path;
+function tradingViewChartUrl(tvSymbol){
+  return 'https://www.tradingview.com/chart/?symbol='+encodeURIComponent(tvSymbol);
+}
+function tradingViewChartHref(kind,code){
+  if(kind==='forex') return tradingViewChartUrl('FX:'+String(code||'').replace('/','').toUpperCase());
+  const info=typeof cryptoChartSymbol==='function'?cryptoChartSymbol(code):{ok:false};
+  const tv=info&&info.ok?info.tv:'BINANCE:'+String(code||'').toUpperCase().replace(/USDT$/,'')+'USDT';
+  return tradingViewChartUrl(tv);
+}
 const marketCoins = coins;
 const tickerCoins = marketCoins.concat([
   ['link','Chainlink'],['avax','Avalanche'],['sui','Sui'],['trx','TRON'],
   ['near','NEAR'],['ltc','Litecoin'],['atom','Cosmos'],['dot','Polkadot']
 ].filter(([symbol])=>!marketCoins.some(([key])=>key===symbol)));
 function editorialTicker(ctx){
-  const item=([symbol,name])=>'<a class="ed-tick-item" data-symbol="'+symbol+'" href="'+editionHref(ctx,'/chart/crypto/'+symbol.toUpperCase())+'">'+
+  const item=([symbol,name])=>'<a class="ed-tick-item" data-symbol="'+symbol+'" href="'+escape(tradingViewChartHref('crypto',symbol))+'" target="_blank" rel="noopener noreferrer">'+
     coinIcon(symbol)+
     '<span class="ed-tick-name">'+escape(name)+'</span>'+
     '<span class="ed-tick-sym">'+symbol.toUpperCase()+'</span>'+
@@ -339,7 +348,7 @@ function todayMarket(ctx, snapshot){
     const change=Number.isFinite(row?.change)?row.change:null;
     const dir=change==null?'':(change>=0?'up':'down');
     const pct=change==null?'—':((change>=0?'+':'')+change.toFixed(2)+'%');
-    return '<a class="ed-market-pane" href="'+editionHref(ctx,'/chart/crypto/'+key.toUpperCase())+'" data-panel="'+key+'"'+(key==='eth'?' hidden':'')+'>'+
+    return '<a class="ed-market-pane" href="'+escape(tradingViewChartHref('crypto',key))+'" target="_blank" rel="noopener noreferrer" data-panel="'+key+'"'+(key==='eth'?' hidden':'')+'>'+
       '<div class="ed-market-quote">'+
         '<span class="ed-coin">'+icon+'<strong>'+label+'</strong></span>'+
         '<span class="ed-last">'+edMoney(row?.price)+'</span>'+
@@ -373,9 +382,7 @@ function editorialHeader(ctx){
     [catUrl('Central Banks'),categoryName(ctx,'Central Banks')],
     [catUrl('Tech'),categoryName(ctx,'Tech')],
     [catUrl('Politics'),categoryName(ctx,'Politics')],
-    ['/sharia',t(ctx,...shariaTitles)]
-  ];
-  const topics=[
+    ['/sharia',t(ctx,...shariaTitles)],
     ['/resources',t(ctx,'Xiriiriyeyaasha','Resources')],
     ['/about',t(ctx,'Nagu saabsan','About')]
   ];
@@ -403,7 +410,7 @@ function editorialHeader(ctx){
     '<form class="ed-search wrap" role="search" method="get" action="'+editionHref(ctx,'/search')+'">'+searchFields+'</form></div>';
   const sheetSearch='<form class="ed-sheet-search" role="search" method="get" action="'+editionHref(ctx,'/search')+'">'+searchFields+'</form>';
   const mega='<div class="ed-mega" id="ed-mega" hidden>'+
-    '<div class="ed-mega-topics"><h2>'+t(ctx,'Mawduucyada','Topics')+'</h2><nav data-ed-more-topics>'+topics.map(([p,l])=>edA(ctx,p,l)).join('')+'</nav></div>'+
+    '<div class="ed-mega-overflow" hidden><h2>'+t(ctx,'Mawduucyada','Topics')+'</h2><nav data-ed-more-topics></nav></div>'+
     '<div class="ed-mega-tools"><h2>'+t(ctx,'Qalabka','Tools')+'</h2><div class="ed-tool-grid">'+tools+'</div></div>'+
     (follow?'<div class="ed-mega-follow">'+follow+'</div>':'')+
   '</div>';
@@ -414,7 +421,6 @@ function editorialHeader(ctx){
     '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div></div>'+
     sheetSearch+
     '<nav class="ed-sheet-nav">'+primary.map(([p,l])=>edA(ctx,p,l)).join('')+'</nav>'+
-    '<div class="ed-sheet-block"><h2>'+t(ctx,'Mawduucyada','Topics')+'</h2><nav>'+topics.map(([p,l])=>edA(ctx,p,l)).join('')+'</nav></div>'+
     '<div class="ed-sheet-block"><h2>'+t(ctx,'Qalabka','Tools')+'</h2><div class="ed-tool-grid">'+tools+'</div></div>'+
     (follow?'<div class="ed-mega-follow">'+follow+'</div>':'')+
   '</div>';

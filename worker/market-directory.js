@@ -31,9 +31,10 @@ async function marketDirectory(ctx){
   let panel;
   if(key==='crypto'){
     const rows=marketCoins.map(([symbol,name])=>{
-      const href=editionHref(ctx,'/chart/crypto/'+symbol.toUpperCase());
+      const href=tradingViewChartHref('crypto',symbol);
       const label=t(ctx,'Fur jaantuska '+name,'Open '+name+' chart');
-      return '<tr class="ed-chart-row" data-symbol="'+symbol+'"><th scope="row"><span class="md-asset">'+coinIcon(symbol)+'<span>'+name+'<small>'+symbol.toUpperCase()+'</small></span></span><span class="ed-row-affordance" aria-hidden="true">'+chartArrowIcon()+'</span></th><td data-price>—</td><td><span data-change>—</span></td><td class="ed-row-link-cell"><a class="ed-row-link" href="'+href+'" aria-label="'+escape(label)+'"></a></td></tr>';
+      const attrs='href="'+escape(href)+'" target="_blank" rel="noopener noreferrer"';
+      return '<tr class="ed-chart-row" data-symbol="'+symbol+'" data-chart-href="'+escape(href)+'"><th scope="row"><a class="ed-row-pair" '+attrs+' aria-label="'+escape(label)+'"><span class="md-asset">'+coinIcon(symbol)+'<span>'+name+'<small>'+symbol.toUpperCase()+'</small></span></span><span class="ed-row-affordance" aria-hidden="true">'+chartArrowIcon()+'</span></a></th><td><a class="ed-row-fill" '+attrs+'><span data-price>—</span></a></td><td><a class="ed-row-fill" '+attrs+'><span data-change>—</span></a></td></tr>';
     }).join('');
     panel=`<section class="md-quotes" data-feed="prices"><header><h2>${t(ctx,'Qiimaha crypto','Crypto prices')}</h2><span>USD</span></header><table><thead><tr><th>${t(ctx,'Hantida','Asset')}</th><th>${t(ctx,'Qiimaha','Price')}</th><th>${t(ctx,'Isbeddelka 24 saac','24h change')}</th></tr></thead><tbody>${rows}</tbody></table><footer><small class="feed-status">${t(ctx,'Qiimaha waa la soo rarayaa…','Loading prices…')}</small></footer></section>`;
   }

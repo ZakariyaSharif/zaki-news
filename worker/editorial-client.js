@@ -47,6 +47,15 @@
     searchInput?.focus();
   }
 
+  document.addEventListener('click',e=>{
+    const row=e.target.closest('.ed-chart-row');
+    if(!row) return;
+    if(e.target.closest('a,button,input,label')) return;
+    const href=row.getAttribute('data-chart-href');
+    if(!href) return;
+    window.open(href,'_blank','noopener,noreferrer');
+  });
+
   more?.addEventListener('click',e=>{e.stopPropagation();header.classList.contains('mega-open')?closeMega():openMega();});
   menu?.addEventListener('click',e=>{e.stopPropagation();header.classList.contains('sheet-open')?closeSheet():openSheet();});
   sheet?.querySelector('[data-ed="close-sheet"]')?.addEventListener('click',closeSheet);
@@ -136,6 +145,8 @@
     const overflowHost=document.querySelector('[data-ed-more-topics]');
     items.forEach(a=>{a.hidden=false;a.classList.remove('is-overflow');});
     if(overflowHost) overflowHost.querySelectorAll('[data-nav-overflow]').forEach(n=>n.remove());
+    const overflowWrap=overflowHost?overflowHost.closest('.ed-mega-overflow'):null;
+    if(overflowWrap) overflowWrap.hidden=true;
     if(getComputedStyle(nav).display==='none') return;
     const keep=3;
     const overflows=[];
@@ -155,6 +166,7 @@
         clone.setAttribute('data-nav-overflow','');
         overflowHost.insertBefore(clone, ref);
       });
+      if(overflowWrap) overflowWrap.hidden=false;
     }
   }
   fitNav();
