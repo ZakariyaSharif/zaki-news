@@ -438,7 +438,111 @@ function editorialHeader(ctx){
     '</nav>'+mega+
   '</header>'+editorialTicker(ctx)+sheet;
 }
-function editorialHome(ctx, list, snapshot){
+function homeSectionSort(a,b){
+  const ap=a.published_at||'';
+  const bp=b.published_at||'';
+  if(ap&&!bp) return -1;
+  if(!ap&&bp) return 1;
+  return bp.localeCompare(ap)||String(a.slug||'').localeCompare(String(b.slug||''));
+}
+function storyCardImage(a,pool){
+  if(a?.image) return a;
+  const donor=(pool||[]).find(item=>item&&item.image&&item.slug!==a?.slug);
+  if(donor) return {...a,image:donor.image,image_alt:donor.image_alt||a?.image_alt||''};
+  return a;
+}
+function homeSectionMeta(ctx,a){
+  const who=escape(a.author||'Zaki News');
+  const when=(!a.sample&&a.published_at)?date(a.published_at,ctx.lang):'';
+  return '<span class="ed-card-meta">'+who+(when?' <i>·</i> '+when:'')+'</span>';
+}
+function homeFeatureCard(ctx,a,pool){
+  const story=storyCardImage(a,pool);
+  const img=story.image
+    ? '<img src="'+escape(story.image)+'" alt="'+escape(story.image_alt||'')+'" width="720" height="450" loading="lazy">'
+    : '<span class="ed-feature-fallback" aria-hidden="true">'+mark+'</span>';
+  const cat=a.sample?t(ctx,'Hagahan','Guide'):categoryName(ctx,a.category);
+  return '<a class="ed-feature" href="'+storyUrl(a)+'">'+
+    img+
+    '<span class="ed-feature-copy">'+
+      '<span class="ed-cat"><i></i> '+escape(cat)+'</span>'+
+      '<h3>'+escape(a.title)+'</h3>'+
+      homeSectionMeta(ctx,a)+
+    '</span></a>';
+}
+function homeMiniCard(ctx,a,pool){
+  const story=storyCardImage(a,pool);
+  const img=story.image
+    ? '<img src="'+escape(story.image)+'" alt="'+escape(story.image_alt||'')+'" width="360" height="220" loading="lazy">'
+    : '<span class="ed-mini-fallback" aria-hidden="true">'+mark+'</span>';
+  return '<a class="ed-mini" href="'+storyUrl(a)+'">'+
+    img+
+    '<span class="ed-mini-copy"><h3>'+escape(a.title)+'</h3>'+homeSectionMeta(ctx,a)+'</span></a>';
+}
+function homeCategorySections(ctx,list){
+  const used=new Set();
+  const take=(test,limit)=>{
+    const rows=list.filter(a=>!used.has(a.slug)&&test(a)).sort(homeSectionSort).slice(0,limit);
+    rows.forEach(a=>used.add(a.slug));
+    return rows;
+  };
+  const about=(a,re)=>re.test([a.title,a.slug].filter(Boolean).join(' '));
+  const defs=[
+    {id:'crypto',title:t(ctx,'Crypto','Crypto'),href:editionHref(ctx,catUrl('Crypto')),pick:()=>take(a=>{
+      const c=canonicalCategory(a.category);
+      if(['Bitcoin','Ethereum','Markets','Stocks','Economy','Central Banks','Tech','Politics','Education','Guides','Halal','Haram','Mashbooh'].includes(c)) return false;
+      return ['Crypto','Regulation','Solana','XRP','BNB','Cardano','Dogecoin','Tether'].includes(c);
+    },5)},
+    {id:'markets',title:t(ctx,'Suuqyada','Markets'),href:editionHref(ctx,catUrl('Markets')),pick:()=>take(a=>canonicalCategory(a.category)==='Markets',5)},
+    {id:'bitcoin',title:'Bitcoin',href:editionHref(ctx,catUrl('Bitcoin')),pick:()=>take(a=>canonicalCategory(a.category)==='Bitcoin'||(canonicalCategory(a.category)==='Education'&&about(a,/\b(bitcoin|btc)\b/i)),5)},
+    {id:'ethereum',title:'Ethereum',href:editionHref(ctx,catUrl('Ethereum')),pick:()=>take(a=>{
+      const c=canonicalCategory(a.category);
+      if(c==='Ethereum') return true;
+      if(['Education','Tech'].includes(c)&&about(a,/ethereum|\beth\b|\bether\b/i)) return true;
+      return false;
+    },5)},
+    {id:'stocks',title:categoryName(ctx,'Stocks'),href:editionHref(ctx,catUrl('Stocks')),pick:()=>take(a=>canonicalCategory(a.category)==='Stocks',5)},
+    {id:'economy',title:t(ctx,'Dhaqaalaha','Economy'),href:editionHref(ctx,catUrl('Economy')),pick:()=>take(a=>['Economy','Central Banks'].includes(canonicalCategory(a.category)),5)},
+    {id:'technology',title:categoryName(ctx,'Tech'),href:editionHref(ctx,catUrl('Tech')),pick:()=>take(a=>canonicalCategory(a.category)==='Tech',5)},
+    {id:'sharia',title:t(ctx,...shariaTitles),href:editionHref(ctx,'/sharia'),pick:()=>take(a=>['Halal','Haram','Mashbooh'].includes(canonicalCategory(a.category)),5)},
+    {id:'guides',title:t(ctx,'Hagayaasha','Guides'),href:editionHref(ctx,catUrl(list.some(a=>canonicalCategory(a.category)==='Guides')?'Guides':'Education')),pick:()=>take(a=>['Guides','Education'].includes(canonicalCategory(a.category)),5)}
+  ];
+  // Crypto first in the visual stack, but pick leftovers after specific desks so thin categories can fill.
+  const order=['markets','bitcoin','ethereum','stocks','economy','technology','sharia','guides','crypto'];
+  const picked={};
+  for(const id of order){
+    const def=defs.find(d=>d.id===id);
+    picked[id]=def.pick();
+  }
+  return defs.map(def=>{
+    const rows=picked[def.id]||[];
+    if(rows.length<3) return '';
+    const feature=rows[0];
+    const rest=rows.slice(1,5);
+    return '<section class="ed-cat-band" data-section="'+def.id+'" data-count="'+rows.length+'">'+
+      '<div class="ed-section-head"><h2>'+escape(def.title)+'</h2><a href="'+def.href+'">'+t(ctx,'Dhammaan','See all')+'</a></div>'+
+      '<div class="ed-cat-grid">'+
+        homeFeatureCard(ctx,feature,rows)+
+        '<div class="ed-cat-cards is-n'+rest.length+'">'+rest.map(a=>homeMiniCard(ctx,a,rows)).join('')+'</div>'+
+      '</div></section>';
+  }).join('');
+}
+function homeVideoStrip(ctx,videos){
+  const list=(videos||[]).filter(v=>v&&v.id&&v.title).slice(0,4);
+  if(!list.length) return '';
+  const cards=list.map(video=>{
+    const href='https://www.youtube.com/watch?v='+encodeURIComponent(video.id);
+    const thumb='https://i.ytimg.com/vi/'+encodeURIComponent(video.id)+'/hqdefault.jpg';
+    return '<a class="ed-video-card" href="'+escape(href)+'" rel="noopener noreferrer" target="_blank">'+
+      '<img src="'+escape(thumb)+'" alt="" width="320" height="180" loading="lazy">'+
+      '<strong>'+escape(video.title)+'</strong></a>';
+  }).join('');
+  return '<section class="ed-video-strip">'+
+    '<div class="ed-section-head"><h2>'+t(ctx,'Muuqaallada','Videos')+'</h2><a href="'+editionHref(ctx,'/videos')+'">'+t(ctx,'Dhammaan','See all')+'</a></div>'+
+    '<p class="ed-video-kicker">Zakariya Academy</p>'+
+    '<div class="ed-video-row">'+cards+'</div></section>';
+}
+function editorialHome(ctx, list, snapshot, videos){
   const lead=list[0];
   if(!lead) return '<p>'+t(ctx,'Wax maqaal ah lama helin.','No articles found.')+'</p>';
   const rest=list.slice(1,7);
@@ -471,6 +575,8 @@ function editorialHome(ctx, list, snapshot){
       '</div>'+
       todayMarket(ctx, snapshot)+
     '</section>'+
+    homeVideoStrip(ctx,videos)+
+    homeCategorySections(ctx,list)+
   '</div>';
 }
 

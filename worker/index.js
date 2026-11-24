@@ -97,9 +97,9 @@ function layout(ctx,title,content,opts={}) {
   return new Response(`<!doctype html><html lang="${ctx.lang}"><head><meta charset="utf-8">${ctx.url.pathname==="/etf-flows"?'<meta http-equiv="refresh" content="900">':""}<meta name="viewport" content="width=device-width,initial-scale=1"><title>${escape(fullTitle)}</title><meta name="description" content="${escape(description)}">${hrefLangTags(ctx,opts)}<link rel="canonical" href="${escape(canonical)}"><meta name="robots" content="${opts.noindex?'noindex,follow':'index,follow,max-image-preview:large'}"><meta property="og:locale" content="${t(ctx,'so_SO','en_US')}"><meta property="og:type" content="${opts.schema?'article':'website'}"><meta property="og:site_name" content="Zaki News"><meta property="og:title" content="${escape(fullTitle)}"><meta property="og:description" content="${escape(description)}"><meta property="og:url" content="${escape(canonical)}"><meta property="og:image" content="${escape(image)}"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${escape(fullTitle)}"><meta name="twitter:description" content="${escape(description)}"><meta name="twitter:image" content="${escape(image)}"><link rel="alternate" type="application/rss+xml" title="Zaki News RSS" href="/rss.xml"><link rel="icon" href="/favicon.ico"><link rel="stylesheet" href="/style.css?v=${styleVersion}"><script defer src="/market-client.js?v=22"></script><script defer src="/editorial-client.js?v=2"></script>${opts.terminal?'<script defer src="/terminal-client.js?v=13"></script>':''}<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,700;0,800;0,900;1,400;1,600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">${ctx.publisher?'<meta name="google-adsense-account" content="'+ctx.publisher+'">':''}${schema}${ads}</head><body class="${opts.terminal?'terminal-page terminal-'+opts.terminal:''}"><a class="skip" href="#main">${t(ctx,'U gudub nuxurka','Skip to content')}</a>${editorialHeader(ctx)}<main id="main" class="wrap">${content}</main>${siteFooter(ctx)}</body></html>`,{status:opts.status||200,headers:{'content-type':'text/html; charset=utf-8','x-content-type-options':'nosniff','referrer-policy':'strict-origin-when-cross-origin','cache-control':opts.noindex?'private, no-store':'no-cache'}});
 }
 
-function home(ctx,list,snapshot){
+function home(ctx,list,snapshot,videos){
   const lead=list[0];
-  return layout(ctx,brand,editorialHome(ctx,list,snapshot),{ads:lead&&!lead.sample});
+  return layout(ctx,brand,editorialHome(ctx,list,snapshot,videos),{ads:lead&&!lead.sample});
 }
 
 function lessonContent(ctx,text){
@@ -307,7 +307,7 @@ export default { async fetch(req,env,work) {
   const published = [...novemberMarketStories,...educationStories,...screeningStories,...await dbAll(env.DB,'SELECT * FROM articles WHERE published_at IS NOT NULL')].sort((a,b)=>b.published_at.localeCompare(a.published_at)||a.slug.localeCompare(b.slug));
   const all = [...published,...samples,...englishSamples];
   const list = all.filter(a=>(a.language||'so')===ctx.lang);
-  if (path==='/') return home(ctx,list,await marketSnapshot());
+  if (path==='/') return home(ctx,list,await marketSnapshot(),await videoList(env.DB));
   if (path==='/sitemap.xml') {
     const pagePaths=['/','/resources','/videos','/latest','/topic/stocks','/topic/forex','/sharia','/etfs','/etf-flows','/crypto-bubbles','/ipo-calendar','/earnings-calendar','/profit-calculator','/commodities','/fear-greed','/about','/contact','/terms','/disclaimer','/privacy',...Object.keys(toolsNav).filter(k=>enabled(ctx,k)).map(k=>'/'+k),...(ctx.profile.author?['/author']:[]),...categories.filter(c=>!['Stocks','Forex'].includes(c)&&published.some(a=>canonicalCategory(a.category)===c)).map(catUrl)];
     const uniquePages=[...new Set(pagePaths)];
