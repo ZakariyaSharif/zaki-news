@@ -15,7 +15,7 @@ const tickerCoins = marketCoins.concat([
   ['near','NEAR'],['ltc','Litecoin'],['atom','Cosmos'],['dot','Polkadot']
 ].filter(([symbol])=>!marketCoins.some(([key])=>key===symbol)));
 function editorialTicker(ctx){
-  const item=([symbol,name])=>'<a class="ed-tick-item" data-symbol="'+symbol+'" href="'+editionHref(ctx,'/charts?coin='+symbol)+'">'+
+  const item=([symbol,name])=>'<a class="ed-tick-item" data-symbol="'+symbol+'" href="'+editionHref(ctx,'/chart/crypto/'+symbol.toUpperCase())+'">'+
     coinIcon(symbol)+
     '<span class="ed-tick-name">'+escape(name)+'</span>'+
     '<span class="ed-tick-sym">'+symbol.toUpperCase()+'</span>'+
@@ -162,8 +162,7 @@ function credits(ctx){
 const englishPolicies={
   '/terms':['Terms of use','<h2>Using Zaki News</h2><p>Zaki News provides reporting and educational material. Use this website lawfully and respect copyrights and trademarks.</p><h2>Corrections and external links</h2><p>We may update or correct stories as new facts emerge. External sites have their own terms. <a href="/contact?lang=en">Contact us</a> with questions or corrections.</p>'],
   '/disclaimer':['Disclaimer','<h2>Information and education</h2><p>Our coverage is for information and education. It does not constitute investment, financial, tax, or legal advice. Cryptocurrency prices can change rapidly and you may lose some or all of your investment. Past performance does not guarantee future results.</p><p>Asset logos are used to identify their respective assets.</p>'],
-  '/privacy':['Privacy','<h2>Newsletter and contact</h2><p>We store your email and signup date when you subscribe. If you contact us through the form, we store your name, email, and message so we can reply. <a href="/contact?lang=en">Contact us</a> to request access, correction, or deletion of your information or to leave the newsletter list.</p><h2>Site features</h2><p>Search terms are included in search URLs. Your theme preference is stored on this device. Newsroom sign-in is handled by ChatGPT. External services have their own privacy policies.</p>'],
-  '/about':['About Zaki News','<p>Zaki News covers crypto, stocks, the economy, central banks, tech, and politics for Somali-speaking readers. The English edition shows articles published in English.</p><h2>Editorial policy</h2><p>We identify authors and publication dates, link to sources when available, and label sample guides. <a href="/contact?lang=en">Contact the newsroom</a> with tips or corrections.</p>']
+  '/privacy':['Privacy','<h2>Newsletter and contact</h2><p>We store your email and signup date when you subscribe. If you contact us through the form, we store your name, email, and message so we can reply. <a href="/contact?lang=en">Contact us</a> to request access, correction, or deletion of your information or to leave the newsletter list.</p><h2>Site features</h2><p>Search terms are included in search URLs. Your theme preference is stored on this device. Newsroom sign-in is handled by ChatGPT. External services have their own privacy policies.</p>']
 };
 
 function footerLangHref(ctx, lang){
@@ -340,14 +339,14 @@ function todayMarket(ctx, snapshot){
     const change=Number.isFinite(row?.change)?row.change:null;
     const dir=change==null?'':(change>=0?'up':'down');
     const pct=change==null?'—':((change>=0?'+':'')+change.toFixed(2)+'%');
-    return '<div class="ed-market-pane" data-panel="'+key+'"'+(key==='eth'?' hidden':'')+'>'+
+    return '<a class="ed-market-pane" href="'+editionHref(ctx,'/chart/crypto/'+key.toUpperCase())+'" data-panel="'+key+'"'+(key==='eth'?' hidden':'')+'>'+
       '<div class="ed-market-quote">'+
         '<span class="ed-coin">'+icon+'<strong>'+label+'</strong></span>'+
         '<span class="ed-last">'+edMoney(row?.price)+'</span>'+
         '<span class="ed-chg" data-direction="'+dir+'">'+pct+'</span>'+
       '</div>'+
       '<div class="ed-spark-wrap">'+edSpark(row?.spark)+'</div>'+
-    '</div>';
+    '</a>';
   };
   return '<aside class="ed-market" data-ed-market>'+
     '<div class="ed-market-head">'+
@@ -369,16 +368,14 @@ function editorialHeader(ctx){
     ['/markets',t(ctx,'Suuqyada','Markets')],
     [catUrl('Forex'),'Forex'],
     ['/etfs',t(ctx,'ETF-yada','ETFs')],
-    [catUrl('Economy'),t(ctx,'Dhaqaalaha','Economy')]
-  ];
-  const topics=[
+    [catUrl('Economy'),t(ctx,'Dhaqaalaha','Economy')],
     [catUrl('Stocks'),categoryName(ctx,'Stocks')],
-    [catUrl('Forex'),'Forex'],
-    [catUrl('Economy'),categoryName(ctx,'Economy')],
     [catUrl('Central Banks'),categoryName(ctx,'Central Banks')],
     [catUrl('Tech'),categoryName(ctx,'Tech')],
     [catUrl('Politics'),categoryName(ctx,'Politics')],
-    ['/sharia',t(ctx,...shariaTitles)],
+    ['/sharia',t(ctx,...shariaTitles)]
+  ];
+  const topics=[
     ['/resources',t(ctx,'Xiriiriyeyaasha','Resources')],
     ['/about',t(ctx,'Nagu saabsan','About')]
   ];
@@ -397,12 +394,16 @@ function editorialHeader(ctx){
   const kicker=t(ctx,'Warbaahinta maaliyadeedka Soomaaliyeed','Somali financial journalism');
   const searchIcon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>';
   const chevron='<svg class="ed-chevron" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M2 4l4 4 4-4"/></svg>';
-  const searchForm='<form class="ed-search" role="search" action="/search">'+
+  const searchFields=
     (ctx.lang==='en'?'<input type="hidden" name="lang" value="en">':'')+
-    '<input type="search" name="q" maxlength="100" placeholder="'+t(ctx,'Raadi maqaallo','Search articles')+'" aria-label="'+t(ctx,'Raadi maqaallo','Search articles')+'">'+
-    '<button type="submit">'+t(ctx,'Raadi','Search')+'</button></form>';
+    '<label class="ed-search-field"><span class="visually-hidden">'+t(ctx,'Raadi maqaallo','Search articles')+'</span>'+
+    '<input type="text" name="q" maxlength="100" enterkeyhint="search" autocomplete="off" spellcheck="false" placeholder="'+t(ctx,'Raadi maqaallo, tusaale Bitcoin ama btc','Search articles, for example Bitcoin or btc')+'" aria-label="'+t(ctx,'Raadi maqaallo','Search articles')+'"></label>'+
+    '<button type="submit" class="ed-search-submit">'+t(ctx,'Raadi','Search')+'</button>';
+  const searchForm='<div class="ed-search-panel" id="ed-search">'+
+    '<form class="ed-search wrap" role="search" method="get" action="'+editionHref(ctx,'/search')+'">'+searchFields+'</form></div>';
+  const sheetSearch='<form class="ed-sheet-search" role="search" method="get" action="'+editionHref(ctx,'/search')+'">'+searchFields+'</form>';
   const mega='<div class="ed-mega" id="ed-mega" hidden>'+
-    '<div class="ed-mega-topics"><h2>'+t(ctx,'Mawduucyada','Topics')+'</h2><nav>'+topics.map(([p,l])=>edA(ctx,p,l)).join('')+'</nav></div>'+
+    '<div class="ed-mega-topics"><h2>'+t(ctx,'Mawduucyada','Topics')+'</h2><nav data-ed-more-topics>'+topics.map(([p,l])=>edA(ctx,p,l)).join('')+'</nav></div>'+
     '<div class="ed-mega-tools"><h2>'+t(ctx,'Qalabka','Tools')+'</h2><div class="ed-tool-grid">'+tools+'</div></div>'+
     (follow?'<div class="ed-mega-follow">'+follow+'</div>':'')+
   '</div>';
@@ -411,6 +412,7 @@ function editorialHeader(ctx){
     '<button type="button" class="ed-icon-btn" data-theme-toggle aria-label="'+t(ctx,'Beddel muuqaalka','Toggle theme')+'">◐</button>'+
     '<button type="button" class="ed-icon-btn" data-ed="close-sheet" aria-label="'+t(ctx,'Xir','Close')+'">'+
     '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div></div>'+
+    sheetSearch+
     '<nav class="ed-sheet-nav">'+primary.map(([p,l])=>edA(ctx,p,l)).join('')+'</nav>'+
     '<div class="ed-sheet-block"><h2>'+t(ctx,'Mawduucyada','Topics')+'</h2><nav>'+topics.map(([p,l])=>edA(ctx,p,l)).join('')+'</nav></div>'+
     '<div class="ed-sheet-block"><h2>'+t(ctx,'Qalabka','Tools')+'</h2><div class="ed-tool-grid">'+tools+'</div></div>'+
@@ -428,10 +430,10 @@ function editorialHeader(ctx){
         '<button type="button" class="ed-icon-btn ed-menu" data-ed="menu" aria-expanded="false" aria-controls="ed-sheet" aria-label="'+t(ctx,'Fur liiska','Open menu')+'">'+
           '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>'+
         '</button>'+
-      '</div>'+searchForm+
-    '</div>'+
-    '<nav class="wrap ed-nav" aria-label="'+t(ctx,'Qaybaha','Sections')+'">'+
-      primary.map(([p,l])=>edA(ctx,p,l)).join('')+
+      '</div>'+
+    '</div>'+searchForm+
+    '<nav class="wrap ed-nav" data-ed-nav aria-label="'+t(ctx,'Qaybaha','Sections')+'">'+
+      primary.map(([p,l],i)=>edA(ctx,p,l).replace('<a ','<a data-nav-item="'+i+'" ')).join('')+
       '<button type="button" class="ed-more" data-ed="more" aria-expanded="false" aria-controls="ed-mega">'+t(ctx,'Dheeraad','More')+' '+chevron+'</button>'+
     '</nav>'+mega+
   '</header>'+editorialTicker(ctx)+sheet;
@@ -470,4 +472,257 @@ function editorialHome(ctx, list, snapshot){
       todayMarket(ctx, snapshot)+
     '</section>'+
   '</div>';
+}
+
+function coinSearchAliasMap(){
+  const map={
+    btc:['bitcoin','btc','xbt'],eth:['ethereum','eth','ether'],sol:['solana','sol'],
+    xrp:['xrp','ripple'],bnb:['bnb','binance coin','binance'],ada:['cardano','ada'],
+    doge:['dogecoin','doge','xdg'],usdt:['tether','usdt'],link:['chainlink','link'],
+    avax:['avalanche','avax'],sui:['sui'],trx:['tron','trx'],near:['near'],
+    ltc:['litecoin','ltc'],atom:['cosmos','atom'],dot:['polkadot','dot']
+  };
+  const list=typeof tickerCoins!=='undefined'?tickerCoins:(typeof coins!=='undefined'?coins:[]);
+  for(const [sym,name] of list){
+    const key=String(sym).toLowerCase();
+    map[key]=[...new Set([...(map[key]||[]),key,String(name||'').toLowerCase()].filter(Boolean))];
+  }
+  return map;
+}
+function searchTokens(q){
+  const raw=String(q||'').trim().toLowerCase();
+  if(!raw) return [];
+  const parts=raw.split(/[\s,+/|]+/).filter(Boolean);
+  const tokens=new Set(parts);
+  tokens.add(raw);
+  const aliases=coinSearchAliasMap();
+  for(const names of Object.values(aliases)){
+    if(names.some(n=>n && (raw===n || parts.includes(n) || (n.length>2 && raw.includes(n))))){
+      names.forEach(n=>tokens.add(n));
+    }
+  }
+  return [...tokens];
+}
+function storySearchHaystack(a){
+  const labels=[
+    a.category,
+    categoryLabels[a.category],
+    categoryName({lang:'so'},a.category),
+    categoryName({lang:'en'},a.category)
+  ];
+  const parts=[a.title,a.summary,a.seo_title,a.seo_description,a.body,a.slug,a.author,a.tags,...labels];
+  if(Array.isArray(a.tags)) parts.push(a.tags.join(' '));
+  let hay=parts.filter(Boolean).join(' ').toLowerCase();
+  for(const names of Object.values(coinSearchAliasMap())){
+    if(names.some(n=>n && hay.includes(n))) hay+=' '+names.join(' ');
+  }
+  return hay;
+}
+function searchStories(stories,q){
+  const tokens=searchTokens(q).filter(tok=>tok.length>=2);
+  if(!tokens.length) return [];
+  return (stories||[]).filter(a=>tokens.some(tok=>storySearchHaystack(a).includes(tok)));
+}
+function rankedSearchStories(ctx,stories,q){
+  const lang=ctx.lang||'so';
+  return searchStories(stories,q).sort((a,b)=>{
+    const al=(a.language||'so')===lang?0:1;
+    const bl=(b.language||'so')===lang?0:1;
+    if(al!==bl) return al-bl;
+    return String(b.published_at||'').localeCompare(String(a.published_at||''));
+  });
+}
+function searchResultItem(ctx,a){
+  const href=editionHref(ctx,storyUrl(a));
+  const thumb=a.image
+    ? '<img class="ed-search-thumb" src="'+escape(a.image)+'" alt="" width="160" height="100" loading="lazy">'
+    : '<span class="ed-search-thumb is-empty" aria-hidden="true"></span>';
+  const langNote=(a.language||'so')!==ctx.lang?'<span class="ed-search-lang">'+(a.language||'so').toUpperCase()+'</span>':'';
+  const when=a.sample||!a.published_at?'':date(a.published_at,ctx.lang);
+  return '<li class="ed-search-item"><a href="'+href+'">'+thumb+
+    '<span class="ed-search-copy"><span class="ed-search-meta"><span class="ed-cat">'+escape(categoryName(ctx,a.category))+'</span>'+
+    (when?'<time>'+escape(when)+'</time>':'')+langNote+'</span>'+
+    '<h2>'+escape(a.title)+'</h2>'+
+    (a.summary?'<p>'+escape(a.summary)+'</p>':'')+
+    '</span></a></li>';
+}
+function searchPage(ctx,stories,q){
+  const query=String(q||'').trim().slice(0,100);
+  const results=query?rankedSearchStories(ctx,stories,query):[];
+  const title=query?t(ctx,'Natiijooyinka “'+query+'”','Results for “'+query+'”'):t(ctx,'Raadi maqaallo','Search articles');
+  const form='<form class="ed-search-page-form" role="search" method="get" action="/search">'+
+    (ctx.lang==='en'?'<input type="hidden" name="lang" value="en">':'')+
+    '<label class="ed-search-field"><span class="visually-hidden">'+t(ctx,'Raadi maqaallo','Search articles')+'</span>'+
+    '<input type="text" name="q" maxlength="100" enterkeyhint="search" autocomplete="off" spellcheck="false" value="'+escape(query)+'" placeholder="'+t(ctx,'Raadi maqaallo, tusaale Bitcoin ama btc','Search articles, for example Bitcoin or btc')+'"></label>'+
+    '<button type="submit" class="ed-search-submit">'+t(ctx,'Raadi','Search')+'</button></form>';
+  let body;
+  if(!query){
+    body='<div class="ed-empty-state"><p>'+t(ctx,'Qor magaca coin, cinwaan, ama mawduuc si aad u raadiso maqaallada Zaki News.','Type a coin name, headline, or topic to search Zaki News articles.')+'</p></div>';
+  }else if(!results.length){
+    body='<div class="ed-empty-state">'+
+      '<p class="ed-empty-kicker">'+t(ctx,'Waxba lama helin','No matches')+'</p>'+
+      '<h2>'+t(ctx,'Ma jiraan maqaallo ku habboon “'+query+'”.','No articles match “'+query+'”.')+'</h2>'+
+      '<p>'+t(ctx,'Isku day magac kale, calaamad coin ah sida btc, ama ka fiiri qaybaha Crypto iyo Suuqyada.','Try another name, a coin symbol such as btc, or browse Crypto and Markets.')+'</p>'+
+      '<p class="ed-empty-links"><a href="'+editionHref(ctx,'/latest')+'">'+t(ctx,'Wararkii u dambeeyay','Latest')+'</a>'+
+      '<a href="'+editionHref(ctx,catUrl('Crypto'))+'">Crypto</a>'+
+      '<a href="'+editionHref(ctx,'/markets')+'">'+t(ctx,'Suuqyada','Markets')+'</a></p></div>';
+  }else{
+    body='<p class="ed-search-count">'+t(ctx,results.length+' natiijo',results.length===1?'1 result':results.length+' results')+'</p>'+
+      '<ul class="ed-search-list">'+results.map(a=>searchResultItem(ctx,a)).join('')+'</ul>';
+  }
+  const page='<article class="ed-search-page wrap">'+
+    '<header class="ed-search-hero"><p class="about-kicker">'+t(ctx,'Raadinta','Search')+'</p>'+
+    '<h1>'+escape(title)+'</h1>'+form+'</header>'+body+'</article>';
+  return layout(ctx,title,page,{description:t(ctx,'Raadi maqaallada Zaki News.','Search Zaki News articles.'),noindex:true});
+}
+function relatedTopicArticles(ctx,stories,category){
+  if(category!=='Forex') return '';
+  const related=(stories||[]).filter(a=>['Economy','Central Banks'].includes(canonicalCategory(a.category)));
+  if(!related.length){
+    return '<div class="ed-empty-state">'+
+      '<p class="ed-empty-kicker">Forex</p>'+
+      '<h2>'+t(ctx,'Weli ma jiraan maqaallo Forex ah.','No Forex articles yet.')+'</h2>'+
+      '<p>'+t(ctx,'Isticmaal shaxda qiimayaasha tixraaca ee kor ku xusan, ama akhri qaybaha Dhaqaalaha iyo Bangiyada Dhexe.','Use the daily reference rates table above, or read Economy and Central Banks.')+'</p>'+
+      '<p class="ed-empty-links"><a href="'+editionHref(ctx,catUrl('Economy'))+'">'+categoryName(ctx,'Economy')+'</a>'+
+      '<a href="'+editionHref(ctx,catUrl('Central Banks'))+'">'+categoryName(ctx,'Central Banks')+'</a></p></div>';
+  }
+  return '<section class="ed-empty-related">'+
+    '<div class="ed-section-head"><h2>'+t(ctx,'Akhri sidoo kale','Related coverage')+'</h2></div>'+
+    '<p class="meta">'+t(ctx,'Weli ma jiraan maqaallo Forex gaar ah. Halkan waa wararka Dhaqaalaha iyo Bangiyada Dhexe ee la xiriira.','No Forex stories yet. Here is related Economy and Central Banks coverage.')+'</p>'+
+    grid(related,ctx)+'</section>';
+}
+
+function forexPairList(){
+  return [['EUR','USD'],['GBP','USD'],['USD','JPY'],['USD','CHF'],['USD','CAD'],['AUD','USD'],['NZD','USD'],['EUR','GBP']];
+}
+function forexPairLabel(slug){
+  const key=String(slug||'').toUpperCase().replace(/[^A-Z]/g,'');
+  const found=forexPairList().find(([a,b])=>a+b===key);
+  return found?found[0]+'/'+found[1]:'';
+}
+function cryptoChartSymbol(slug){
+  const raw=String(slug||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+  const base=raw.replace(/USDT$/,'').replace(/USD$/,'')||raw;
+  const list=typeof tickerCoins!=='undefined'?tickerCoins:(typeof marketCoins!=='undefined'?marketCoins:coins||[]);
+  const known=new Map(list.map(([s,n])=>[String(s).toUpperCase(),n]));
+  if(base==='USDT') return {ok:true,tv:'BINANCE:USDTUSDC',base:'USDT',name:known.get('USDT')||'Tether'};
+  if(known.has(base)) return {ok:true,tv:'BINANCE:'+base+'USDT',base,name:known.get(base)};
+  return {ok:false};
+}
+function chartArrowIcon(){
+  return '<svg class="ed-chart-arrow" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16l4-5 3 2.5 5-7"/><path d="M14 6h5v5"/></svg>';
+}
+function instrumentChartPage(ctx,market,slug){
+  const key=String(slug||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+  let tv='',display='',back='/',backLabel='',kicker='',desc='';
+  if(market==='forex'){
+    const pair=forexPairLabel(key);
+    if(!pair) return layout(ctx,t(ctx,'Bogga lama helin','Page not found'),'<h1>'+t(ctx,'Bogga lama helin','Page not found')+'</h1><p><a class="text-link" href="'+editionHref(ctx,catUrl('Forex'))+'">'+t(ctx,'Ku laabo Forex','Back to Forex')+'</a></p>',{status:404,noindex:true});
+    tv='FX:'+key;
+    display=pair;
+    back=catUrl('Forex');
+    backLabel=t(ctx,'Ku laabo Forex','Back to Forex');
+    kicker=t(ctx,'Jaantuska Forex','Forex chart');
+    desc=t(ctx,'Jaantuska qiimaha '+pair+' ee TradingView.','TradingView price chart for '+pair+'.');
+  }else if(market==='crypto'){
+    const info=cryptoChartSymbol(key);
+    if(!info.ok) return layout(ctx,t(ctx,'Bogga lama helin','Page not found'),'<h1>'+t(ctx,'Bogga lama helin','Page not found')+'</h1><p><a class="text-link" href="'+editionHref(ctx,'/markets')+'">'+t(ctx,'Ku laabo Suuqyada','Back to Markets')+'</a></p>',{status:404,noindex:true});
+    tv=info.tv;
+    display=info.name+' ('+info.base+')';
+    back='/markets';
+    backLabel=t(ctx,'Ku laabo Suuqyada','Back to Markets');
+    kicker=t(ctx,'Jaantuska crypto','Crypto chart');
+    desc=t(ctx,'Jaantuska qiimaha '+info.name+' ee TradingView.','TradingView price chart for '+info.name+'.');
+  }else{
+    return layout(ctx,t(ctx,'Bogga lama helin','Page not found'),'<h1>'+t(ctx,'Bogga lama helin','Page not found')+'</h1>',{status:404,noindex:true});
+  }
+  const tvUrl='https://www.tradingview.com/chart/?symbol='+encodeURIComponent(tv);
+  const widget='<section class="ed-tv-stage" aria-label="'+escape(display)+'">'+
+    '<div class="tradingview-widget-container" id="ed-tv-widget">'+
+    '<div class="tradingview-widget-container__widget"></div>'+
+    '<div class="tradingview-widget-copyright">'+(typeof publicLink==='function'?publicLink(tvUrl,'TradingView'):'<a href="'+escape(tvUrl)+'" rel="noopener noreferrer" target="_blank">TradingView</a>')+'</div></div></section>'+
+    '<script>(function(){var dark=document.documentElement.getAttribute("data-theme")==="dark";var box=document.getElementById("ed-tv-widget");if(!box)return;var config={autosize:true,symbol:'+JSON.stringify(tv)+',interval:"D",timezone:"Europe/Brussels",theme:dark?"dark":"light",style:"1",locale:"en",backgroundColor:dark?"#14110F":"#FBF5EE",gridColor:dark?"rgba(255,255,255,0.08)":"rgba(228,216,204,0.7)",hide_side_toolbar:false,allow_symbol_change:true,withdateranges:true,calendar:false,support_host:"https://www.tradingview.com"};var s=document.createElement("script");s.async=true;s.type="text/javascript";s.src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";s.text=JSON.stringify(config);box.appendChild(s);})();</script>';
+  const page='<article class="ed-chart-page wrap">'+
+    '<p class="ed-chart-back"><a href="'+editionHref(ctx,back)+'">'+backLabel+'</a></p>'+
+    '<header class="ed-chart-hero"><p class="about-kicker">'+kicker+'</p><h1>'+escape(display)+'</h1>'+
+    '<p class="dek">'+t(ctx,'Jaantuska qiimaha ee TradingView. Xogtu waa mid tixraac ah, ma aha talo maalgashi.','TradingView price chart. This is reference data, not investment advice.')+'</p></header>'+
+    widget+'</article>';
+  return layout(ctx,display,page,{description:desc});
+}
+
+function aboutToolCount(ctx){
+  const ids=new Set([...Object.keys(toolsNav).filter(k=>enabled(ctx,k)),'etf-flows','etfs','fear-greed','sharia','commodities','ipo-calendar','earnings-calendar']);
+  return ids.size;
+}
+function aboutPage(ctx,stories){
+  const published=(stories||[]).filter(a=>!a.sample && a.published_at);
+  const storyCount=published.length;
+  const tools=aboutToolCount(ctx);
+  const kicker=t(ctx,'Ku saabsan','About');
+  const headline=t(ctx,'Warbixin maaliyadeed oo madax bannaan, Af Soomaali iyo English','Independent financial news in Somali and English');
+  const dek=t(ctx,
+    'Zaki News waa warbaahin maaliyadeed oo madax bannaan oo Af Soomaali ku qorta, laguna daabaco Af Soomaali iyo English. Waa qayb ka mid ah Zakariya Academy, oo ah aasaaska ugu horreeyay ee waxbarashada crypto ee Af Soomaali, oo bilaabmay horraantii 2026.',
+    'Zaki News publishes independent Somali language financial news in Somali and English. It is part of Zakariya Academy, the first Af Soomaali crypto education platform, which opened in early 2026.'
+  );
+  const stats=[
+    storyCount? [String(storyCount), t(ctx,'Maqaallo la daabacay','Published stories')]:null,
+    [String(tools), t(ctx,'Qalab iyo bogag xogeed','Tools and data pages')],
+    ['100K+', t(ctx,'Bulshada Zakariya Academy','Zakariya Academy community')]
+  ].filter(Boolean).map(([n,l])=>'<li><strong>'+escape(n)+'</strong><span>'+escape(l)+'</span></li>').join('');
+  const coverCards=[
+    ['<a class="about-cover" href="'+editionHref(ctx,catUrl('Crypto'))+'"><strong>Crypto</strong><span>'+t(ctx,'Bitcoin, Ethereum, iyo suuqa crypto.','Bitcoin, Ethereum, and the crypto market.')+'</span></a>'],
+    ['<a class="about-cover" href="'+editionHref(ctx,catUrl('Stocks'))+'"><strong>'+escape(categoryName(ctx,'Stocks'))+'</strong><span>'+t(ctx,'Saamiyada iyo ETF-yada suuqa guud.','Stocks and broad market ETFs.')+'</span></a>'],
+    ['<a class="about-cover" href="'+editionHref(ctx,catUrl('Forex'))+'"><strong>Forex</strong><span>'+t(ctx,'Lammaanayaasha lacagaha iyo qiimayaasha tixraaca.','Currency pairs and reference rates.')+'</span></a>'],
+    ['<div class="about-cover is-split"><strong>'+t(ctx,'Dhaqaalaha iyo bangiyada dhexe','Economy and central banks')+'</strong><span>'+t(ctx,'Siyaasadda lacagta, sicir bararka, iyo bangiyada dhexe.','Monetary policy, inflation, and central banks.')+'</span><span class="about-cover-extra"><a href="'+editionHref(ctx,catUrl('Economy'))+'">'+escape(categoryName(ctx,'Economy'))+'</a><a href="'+editionHref(ctx,catUrl('Central Banks'))+'">'+escape(categoryName(ctx,'Central Banks'))+'</a></span></div>'],
+    ['<a class="about-cover" href="'+editionHref(ctx,catUrl('Tech'))+'"><strong>'+escape(categoryName(ctx,'Tech'))+'</strong><span>'+t(ctx,'Tignoolajiyada iyo wararka dhijitaalka ah.','Technology and digital industry news.')+'</span></a>'],
+    ['<a class="about-cover" href="'+editionHref(ctx,catUrl('Politics'))+'"><strong>'+escape(categoryName(ctx,'Politics'))+'</strong><span>'+t(ctx,'Siyaasadda iyo go\'aannada saameeya suuqyada.','Politics and decisions that move markets.')+'</span></a>'],
+    ['<a class="about-cover" href="'+editionHref(ctx,'/sharia')+'"><strong>'+t(ctx,...shariaTitles)+'</strong><span>'+t(ctx,'Shaashadda Xalaal, Xaaraan, iyo Mashbooh.','Halal, Haram, and Mashbooh screening.')+'</span></a>']
+  ].map(x=>x[0]).join('');
+
+  const standards=[
+    [t(ctx,'Ilaha waa la xiriiriyaa','Sources are linked'),t(ctx,'Marka ilaha la heli karo, waxaan ku xirnaa warbixinta asalka ah si akhristuhu u hubin karo xaqiiqda.','When sources are available, we link to the original reporting so readers can verify the facts.')],
+    [t(ctx,'Qorayaasha iyo taariikhaha','Authors and dates'),t(ctx,'Maqaalladu waxay muujiyaan qoraaga iyo taariikhda daabacaadda.','Articles identify the author and the publication date.')],
+    [t(ctx,'Sixitaannada','Corrections'),t(ctx,'Haddii khalad la ogaado, nala soo xiriir si aan u saxno diiwaanka.','If an error is found, contact us so we can correct the record.')],
+    [t(ctx,'Madax bannaanida','Independence'),t(ctx,'Go\'aannada tifaftirka waa kuwo madax bannaan. Ma jiro xayeysiis lacag ah oo loo soo bandhigayo sidii war.','Editorial decisions are independent. We do not present paid promotion as news.')],
+    [t(ctx,'Ma aha talo maalgashi','Not financial advice'),t(ctx,'Warbixintu waa xog iyo falanqayn. Ma aha talo maalgashi. Samee baaritaankaaga (DYOR).','Coverage is information and analysis. It is not investment advice. Do your own research (DYOR).')]
+  ].map(([h,p])=>'<li><strong>'+h+'</strong><p>'+p+'</p></li>').join('');
+
+  const sharia=t(ctx,
+    'Habka tifaftirka Zaki News wuxuu tokennada mashruucyada DeFi geliyaa Xaaraan, meme coins-na Mashbooh. Tusaalooyinka Xalaal waxay raacaan isha baaritaanka ee ku lifaaqan. Calaamadahani waa waxbarasho, mana caddaynayaan isticmaalka token kasta.',
+    'The Zaki News editorial policy places DeFi protocol tokens under Haram and meme coins under Mashbooh. The Halal examples are classified by the linked screener. These labels are educational and do not certify every use of a token.'
+  );
+
+  const socials=footerSocials(ctx.profile||{});
+  const page='<article class="about-page wrap">'+
+    '<header class="about-hero"><p class="about-kicker">'+kicker+'</p>'+
+    '<h1>'+headline+'</h1><p class="about-dek">'+dek+'</p>'+
+    (stats?'<ul class="about-stats">'+stats+'</ul>':'')+
+    '</header>'+
+    '<section class="about-section"><h2>'+t(ctx,'Waxaan ka hadalnaa','What we cover')+'</h2>'+
+    '<div class="about-covers">'+coverCards+'</div></section>'+
+    '<section class="about-section" id="editorial-policy"><h2>'+t(ctx,'Sida aan u shaqeyno','How we work')+'</h2>'+
+    '<ol class="about-standards">'+standards+'</ol></section>'+
+    '<section class="about-section about-sharia"><h2>'+t(ctx,'Habka Xalaal iyo Xaaraan','Sharia approach')+'</h2>'+
+    '<p>'+sharia+'</p>'+
+    '<p><a class="text-link" href="'+editionHref(ctx,'/sharia')+'">'+t(ctx,'Fur hagaha Xalaal iyo Xaaraan','Open the Halal and Haram guide')+'</a></p></section>'+
+    '<section class="about-section about-founder"><h2>'+t(ctx,'Ka dambeysa Zaki News','Behind Zaki News')+'</h2>'+
+    '<div class="about-founder-card">'+
+      '<span class="about-mono" aria-hidden="true">ZS</span>'+
+      '<div><h3>Zakariya Sharif (Zaki)</h3>'+
+      '<p>'+t(ctx,
+        'Aasaasaha Zakariya Academy. CQVA certified, qoraa la xaqiijiyey ee CoinMarketCap, kuna nool Ghent, Belgium.',
+        'Founder of Zakariya Academy. CQVA certified, a verified CoinMarketCap author, based in Ghent, Belgium.'
+      )+'</p></div>'+
+    '</div></section>'+
+    '<section class="about-section about-follow"><h2>'+t(ctx,'Na raac, nala soo xiriir','Follow and contact')+'</h2>'+
+    socials+
+    '<p class="about-follow-links">'+
+      '<a href="'+editionHref(ctx,'/contact')+'">'+t(ctx,'Xiriir','Contact')+'</a>'+
+      '<a href="'+editionHref(ctx,'/about')+'#editorial-policy">'+t(ctx,'Siyaasadda tifaftirka','Editorial policy')+'</a>'+
+      '<a href="'+editionHref(ctx,'/contact')+'">'+t(ctx,'Sixitaannada iyo tilmaamaha','Corrections and tips')+'</a>'+
+    '</p></section>'+
+  '</article>';
+  return layout(ctx,t(ctx,'Ku saabsan Zaki News','About Zaki News'),page,{
+    description:t(ctx,'Zaki News waa warbaahin maaliyadeed oo madax bannaan, Af Soomaali iyo English, qayb ka mid ah Zakariya Academy.','Zaki News is independent financial news in Somali and English, and is part of Zakariya Academy.')
+  });
 }

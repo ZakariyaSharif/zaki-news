@@ -27,7 +27,12 @@ function forexFeed(){
 function forexPanel(ctx){
   const data=fxQuotes(fxSnapshot);
   const latest=t(ctx,'Qiimayaasha tixraaca maalinlaha ah','Daily reference rates');
-  const rows=data.items.map(({symbol,value,change})=>'<tr data-fx="'+symbol+'"><th scope="row">'+symbol.split('/').map(code=>'<span class="fx-currency"><span aria-hidden="true">'+currencyFlags[code]+'</span>'+code+'</span>').join(' / ')+'</th><td data-rate>'+value.toFixed(symbol.endsWith('JPY')?3:4)+'</td><td data-change data-direction="'+(change>=0?'up':'down')+'">'+(change>=0?'+':'')+change.toFixed(2)+'%</td></tr>').join('');
+  const rows=data.items.map(({symbol,value,change})=>{
+    const slug=symbol.replace('/','');
+    const href=editionHref(ctx,'/chart/forex/'+slug);
+    const label=t(ctx,'Fur jaantuska '+symbol,'Open '+symbol+' chart');
+    return '<tr class="ed-chart-row" data-fx="'+symbol+'"><th scope="row">'+symbol.split('/').map(code=>'<span class="fx-currency"><span aria-hidden="true">'+currencyFlags[code]+'</span>'+code+'</span>').join(' / ')+'<span class="ed-row-affordance" aria-hidden="true">'+chartArrowIcon()+'</span></th><td data-rate>'+value.toFixed(symbol.endsWith('JPY')?3:4)+'</td><td data-change data-direction="'+(change>=0?'up':'down')+'">'+(change>=0?'+':'')+change.toFixed(2)+'%</td><td class="ed-row-link-cell"><a class="ed-row-link" href="'+href+'" aria-label="'+escape(label)+'"></a></td></tr>';
+  }).join('');
   return '<section class="asset-board" data-feed="forex"><h2>'+latest+'</h2><p class="feed-status">'+t(ctx,'Xogta kaydsan','Saved data')+' · '+data.date+'</p><div class="studio-table"><table><thead><tr><th>'+t(ctx,'Lammaanaha','Pair')+'</th><th>'+t(ctx,'Qiimaha','Rate')+'</th><th>'+t(ctx,'Isbeddelka maalinlaha ah','Daily change')+'</th></tr></thead><tbody>'+rows+'</tbody></table></div><p class="meta">'+t(ctx,'Isbeddelka waxa laga xisaabiyaa maalintii xogta ugu dambaysay ee ka horraysay.','Change is measured against the preceding published rate.')+' · '+publicLink(fxSource,'Frankfurter')+'</p></section>';
 }
 const stockGroups=[

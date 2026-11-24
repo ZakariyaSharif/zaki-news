@@ -283,7 +283,7 @@ export default { async fetch(req,env,work) {
     const feedLink=origin+(feedLang==='en'?'/?lang=en':'/');
     return xml('<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel><language>'+feedLang+'</language><title>Zaki News</title><link>'+escape(feedLink)+'</link><description>'+escape(feedDesc)+'</description>'+items.map(a=>'<item><title>'+escape(a.title)+'</title><link>'+escape(origin+storyUrl(a))+'</link><guid>'+escape(origin+storyUrl(a))+'</guid><pubDate>'+new Date(a.published_at).toUTCString()+'</pubDate><description>'+escape(a.summary)+'</description></item>').join('')+'</channel></rss>');
   }
-  if (path==='/about') return layout(ctx,'Ku saabsan Zaki News','<article class="reading"><h1>Ku saabsan Zaki News</h1><div class="copy"><p>'+desc+'</p><h2>Siyaasadda tifaftirka</h2><p>Maqaalladu waxay muujiyaan qoraaga iyo taariikhda daabacaadda. Waxaan ku darnaa xiriiriyeyaasha ilaha marka la heli karo, waxaana calaamadinnaa maqaallada tusaalaha ah. Wararku waxay ujeeddadoodu tahay xog-bixin.</p><h2>Naga hel YouTube</h2><p><a href="'+channel+'">Zakariya Academy</a></p></div></article>');
+  if (path==='/about') return aboutPage(ctx, all);
   if (path==='/privacy') return layout(ctx,'Asturnaanta','<article class="reading"><h1>Asturnaanta</h1><div class="copy"><p>Ereyada aad raadiso waxaa boggan loogu diraa qayb ka mid ah URL-ka raadinta. Qolka wararku wuxuu adeegsadaa gelitaanka ChatGPT, wuxuuna kaydiyaa aqoonsiga koontada mulkiilaha si loo maamulo gelitaanka.</p><p>Xiriiriyeyaasha dibadda waxay kuu gudbiyaan adeegyo kale sida YouTube. Google Fonts ayaa bixiya farta boggan.</p><h2>Warsidaha</h2><p>Markaad isdiiwaangeliso, waxaan kaydinnaa iimaylkaaga iyo taariikhda isdiiwaangelinta. Nala soo xiriir haddii aad rabto in lagaa saaro liiska.</p><h2>Farriimaha xiriirka</h2><p>Markaad foomka soo dirto, waxaan kaydinnaa magaca, iimaylka iyo farriinta si aan u akhrino ugana jawaabno. Waxaad ka codsan kartaa inaad hesho, saxdo ama tirtirto xogtaada adigoo <a href="/contact">nala soo xiriiraya</a>.</p>'+(publisher?'<h2>Xayeysiis</h2><p>Marka Google AdSense shaqeeyo, Google iyo la-hawlgalayaashiisu waxay adeegsan karaan cookies ama farsamooyin la mid ah si ay xayeysiis u soo bandhigaan. Eeg <a href="https://policies.google.com/technologies/partner-sites">ogeysiiska asturnaanta ee Google ee bogagga la-hawlgalayaasha</a>.</p>':'')+'</div></article>');
   if (path.startsWith('/article/')) {
     const slug = path.slice(9);
@@ -294,13 +294,20 @@ export default { async fetch(req,env,work) {
     }
   }
   if (path==='/topic/technology') return new Response(null,{status:301,headers:{location:editionHref(ctx,'/topic/tech')}});
+  const chartMatch=path.match(/^\/chart\/(forex|crypto)\/([A-Za-z0-9]+)$/i);
+  if(chartMatch) return instrumentChartPage(ctx, chartMatch[1].toLowerCase(), chartMatch[2]);
+  if (path==='/search') {
+    const q=(url.searchParams.get('q')||'').trim().slice(0,100);
+    return searchPage(ctx, all, q);
+  }
   const category = categories.find(c=>catUrl(c)===path);
-  if (category || path==='/latest' || path==='/search') {
-    const search = path==='/search';
-    const q = (url.searchParams.get('q')||'').trim().slice(0,100);
-    const results = category?list.filter(a=>category==='Crypto'?![...mainCategories.slice(1),'Halal','Haram','Mashbooh'].includes(canonicalCategory(a.category)):canonicalCategory(a.category)===category):search&&q?list.filter(a=>[a.title,a.summary,a.category,categoryLabels[a.category],a.body].join(' ').toLowerCase().includes(q.toLowerCase())):list;
-    const title = categoryName(ctx,category) || (search?t(ctx,'Raadi maqaallo','Search articles'):t(ctx,'Maqaalladii u dambeeyay','Latest stories'));
-    return layout(ctx,title,'<div class="section-title"><h1>'+escape(title)+'</h1></div>'+(search&&q?'<p class="meta">Natiijooyinka “'+escape(q)+'”</p>':'')+(category==='Forex'?forexPanel(ctx):category==='Stocks'?stockPanel(ctx):['Halal','Haram','Mashbooh'].includes(category)?'<p><a class="text-link" href="'+editionHref(ctx,'/sharia')+'">'+t(ctx,'Eeg hagaha qaybaha','Open the sector guide')+' →</a></p>':'')+(results.length?grid(results,ctx):'<p>'+t(ctx,'Wax maqaal ah lama helin.','No articles found.')+'</p>'),{description:category?t(ctx,'Akhri wararka iyo hagayaasha '+categoryName({lang:'so'},category)+' ee Zaki News!','Read Zaki News coverage of '+categoryName({lang:'en'},category)+'.'):desc,noindex:search||!!category&&!['Forex','Stocks'].includes(category)&&!results.some(a=>!a.sample),ads:!search&&results.some(a=>!a.sample)});
+
+  if (category || path==='/latest') {
+    const results = category?list.filter(a=>category==='Crypto'?![...mainCategories.slice(1),'Halal','Haram','Mashbooh'].includes(canonicalCategory(a.category)):canonicalCategory(a.category)===category):list;
+    const title = categoryName(ctx,category) || t(ctx,'Maqaalladii u dambeeyay','Latest stories');
+    const panel = category==='Forex'?forexPanel(ctx):category==='Stocks'?stockPanel(ctx):['Halal','Haram','Mashbooh'].includes(category)?'<p><a class="text-link" href="'+editionHref(ctx,'/sharia')+'">'+t(ctx,'Eeg hagaha qaybaha','Open the sector guide')+' →</a></p>':'';
+    const articles = results.length?grid(results,ctx):(category==='Forex'?relatedTopicArticles(ctx,list,category):'<div class="ed-empty-state"><p>'+t(ctx,'Wax maqaal ah lama helin.','No articles found.')+'</p></div>');
+    return layout(ctx,title,'<div class="section-title"><h1>'+escape(title)+'</h1></div>'+panel+articles,{description:category?t(ctx,'Akhri wararka iyo hagayaasha '+categoryName({lang:'so'},category)+' ee Zaki News!','Read Zaki News coverage of '+categoryName({lang:'en'},category)+'.'):desc,noindex:!!category&&!['Forex','Stocks'].includes(category)&&!results.some(a=>!a.sample),ads:results.some(a=>!a.sample)});
   }
   return layout(ctx,t(ctx,'Bogga lama helin','Page not found'),'<h1>'+t(ctx,'Bogga lama helin','Page not found')+'</h1><p><a class="text-link" href="'+editionHref(ctx,'/')+'">'+t(ctx,'Ku laabo bogga hore','Back to the homepage')+'</a></p>',{status:404,noindex:true});
 }};

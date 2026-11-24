@@ -56,8 +56,10 @@ function chartPage(ctx,title){
   const local=ctx.url.searchParams.get('view')==='local';
   const toggle='<nav class="calendar-tabs" aria-label="'+t(ctx,'Dooro jaantus','Chart selection')+'">'+fcChip(ctx,'/charts','TradingView',!local)+fcChip(ctx,'/charts?view=local',t(ctx,'Jaantuska Zaki','Zaki chart'),local)+'</nav>';
   if(!local){
-    const full='https://www.tradingview.com/chart/?symbol=BINANCE%3ABTCUSDT';
-    const config={autosize:true,symbol:'BINANCE:BTCUSDT',interval:'D',timezone:'Etc/UTC',theme:'dark',style:'1',locale:'en',backgroundColor:'#09091e',gridColor:'rgba(42,46,57,0.18)',hide_side_toolbar:false,hide_top_toolbar:false,allow_symbol_change:true,withdateranges:true,hide_volume:true};
+    const coinInfo=typeof cryptoChartSymbol==='function'?cryptoChartSymbol(ctx.url.searchParams.get('coin')||'btc'):{ok:true,tv:'BINANCE:BTCUSDT'};
+    const tvSymbol=coinInfo && coinInfo.ok?coinInfo.tv:'BINANCE:BTCUSDT';
+    const full='https://www.tradingview.com/chart/?symbol='+encodeURIComponent(tvSymbol);
+    const config={autosize:true,symbol:tvSymbol,interval:'D',timezone:'Etc/UTC',theme:'dark',style:'1',locale:'en',backgroundColor:'#09091e',gridColor:'rgba(42,46,57,0.18)',hide_side_toolbar:false,hide_top_toolbar:false,allow_symbol_change:true,withdateranges:true,hide_volume:true};
     const chart='<section class="zaki-tv-stage" style="width:100%;height:max(440px,calc(100dvh - 150px));min-width:0"><div class="tradingview-widget-container" style="height:100%;width:100%"><div class="tradingview-widget-container__widget" style="height:calc(100% - 32px);width:100%"></div><div class="tradingview-widget-copyright">'+publicLink(full,t(ctx,'Ka fur TradingView','Open in TradingView'))+'</div><script async src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js">'+JSON.stringify(config)+'</script></div></section>';
     return layout(ctx,title,terminalShell(ctx,toggle+chart),{terminal:'charts'});
   }
