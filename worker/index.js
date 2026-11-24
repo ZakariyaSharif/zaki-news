@@ -125,19 +125,76 @@ const field = (name,label,value,attrs='') => '<label>'+label+'<input name="'+nam
 const imageLabels = {bitcoin:'Bitcoin',ethereum:'Ethereum',security:'Amniga',markets:'Suuqyada','regulation-capitol':'Capitol-ka Maraykanka'};
 const options = (values,current,labels) => values.map(v=>'<option value="'+escape(v)+'"'+(v===current?' selected':'')+'>'+escape(labels[v])+'</option>').join('');
 const message = value => value?'<p class="status">'+escape(value)+'</p>':'';
-const studioPage = (ctx,content,opts={}) => layout(ctx,'Qolka wararka','<h1>Qolka wararka</h1>'+content,{noindex:true,...opts});
+function studioActivePanel(ctx){
+  const panel=String(ctx.url.searchParams.get('panel')||'');
+  if(['subscribers','sections','calendar','videos','profile','inbox'].includes(panel)) return panel;
+  return 'articles';
+}
+function studioNav(ctx){
+  const active=studioActivePanel(ctx);
+  const items=[
+    ['articles','/studio','Maqaallada'],
+    ['videos','/studio?panel=videos','Muuqaallada · Videos'],
+    ['profile','/studio?panel=profile','Qoraaga iyo xiriirrada'],
+    ['inbox','/studio?panel=inbox','Farriimaha'],
+    ['subscribers','/studio?panel=subscribers','Isdiiwaangeliyeyaasha'],
+    ['sections','/studio?panel=sections','Qaybaha bogga'],
+    ['calendar','/studio?panel=calendar','Jadwalka iyo unlocks']
+  ];
+  return '<nav class="st-nav" aria-label="Maamulka"><div class="st-nav-tabs">'+
+    items.map(([id,href,label])=>'<a href="'+href+'"'+(active===id?' aria-current="page"':'')+'>'+label+'</a>').join('')+
+    '</div></nav>';
+}
+function studioPeriodCounts(timestamps, now=new Date()){
+  const day=now.toISOString().slice(0,10);
+  const monday=new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()-((now.getUTCDay()+6)%7)));
+  const week=monday.toISOString().slice(0,10);
+  let today=0, weekCount=0;
+  for(const value of timestamps){
+    const d=String(value||'').slice(0,10);
+    if(d===day) today++;
+    if(d>=week) weekCount++;
+  }
+  return {today, week:weekCount};
+}
+function studioAvatar(label){
+  const raw=String(label||'').trim();
+  const ch=escape((raw.slice(0,1).toUpperCase()||'?'));
+  const pal=['#F04E23','#BC4818','#1F6B4A','#245E8A','#7A3E12'];
+  let h=0;
+  for(const c of raw) h=(h*31+c.charCodeAt(0))>>>0;
+  return '<span class="st-avatar" style="background:'+pal[h%pal.length]+'">'+ch+'</span>';
+}
+function studioCsvLink(href,label){
+  return '<a class="st-csv" href="'+href+'"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v12m0 0l-4-4m4 4l4-4M5 19h14"/></svg>'+label+'</a>';
+}
+function studioStats(items){
+  return '<div class="st-stats">'+items.map(([n,label])=>'<div><strong>'+n+'</strong><span>'+escape(label)+'</span></div>').join('')+'</div>';
+}
+function studioSearch(placeholder){
+  return '<div class="st-toolbar"><label class="st-search"><span class="st-sr">Raadi</span><input data-st-filter type="search" maxlength="100" placeholder="'+escape(placeholder)+'" autocomplete="off"></label></div>';
+}
+function studioUiScript(){
+  return '<script>(function(){var i=document.querySelector("[data-st-filter]");var l=document.querySelector("[data-st-list]");if(i&&l){i.addEventListener("input",function(){var q=i.value.trim().toLowerCase();var n=0;l.querySelectorAll("[data-st-row]").forEach(function(row){var ok=!q||(row.getAttribute("data-st-text")||"").indexOf(q)!==-1;row.hidden=!ok;if(ok)n++;});var empty=l.querySelector("[data-st-empty-filter]");if(empty) empty.hidden=!!(n||!q);});}document.addEventListener("submit",function(e){var msg=e.target.getAttribute("data-st-confirm");if(msg&&!confirm(msg)) e.preventDefault();});})();</script>';
+}
+function studioPage(ctx,content,opts={}){
+  const nav=opts.nav===false?'':studioNav(ctx);
+  const signout=opts.nav===false?'':'<a class="st-nav-out" href="/signout-with-chatgpt?returnTo=%2F" target="_top">Ka bax</a>';
+  const body='<div class="st-shell"><header class="st-brand"><div><p class="st-kicker">Zaki News</p><h1>Qolka wararka</h1></div>'+signout+'</header>'+nav+'<div class="st-body">'+content+'</div>'+(opts.nav===false?'':studioUiScript())+'</div>';
+  return layout(ctx,'Qolka wararka',body,{noindex:true,...opts});
+}
 
 async function studio(ctx,req,env) {
   const db = env.DB;
   const uid = req.headers.get('oai-authenticated-user-id');
   if (Number(req.headers.get('content-length'))>300000) return text('Codsigu aad buu u dheer yahay.',413);
   const owner = (await dbFirst(db,"SELECT value FROM settings WHERE key='owner'"))?.value;
-  if (!uid) return studioPage(ctx,'<p><a class="btn" href="/signin-with-chatgpt?returnTo=%2Fadmin" target="_top">Ku gal ChatGPT</a></p>');
+  if (!uid) return studioPage(ctx,'<p><a class="btn" href="/signin-with-chatgpt?returnTo=%2Fadmin" target="_top">Ku gal ChatGPT</a></p>',{nav:false});
   if (req.method==='POST' && (!allowedFormOrigin(req,ctx) || !req.headers.get('content-type')?.startsWith('application/x-www-form-urlencoded'))) return text('Codsiga lama aqbalin.',403);
   const email = req.headers.get('oai-authenticated-user-email')?.trim().toLowerCase();
   const ownerEmail = env.NEWSROOM_OWNER_EMAIL?.trim().toLowerCase();
   if (owner !== uid && (!ownerEmail || email !== ownerEmail)) {
-    return studioPage(ctx,'<p>Qolka wararka waxaa geli kara oo keliya mulkiilaha bogga.</p>',{status:403});
+    return studioPage(ctx,'<p>Qolka wararka waxaa geli kara oo keliya mulkiilaha bogga.</p>',{status:403,nav:false});
   }
   const panel = ctx.url.searchParams.get('panel');
   if (['subscribers','sections','calendar'].includes(panel)) return editionAdmin(ctx,req,db,panel);
@@ -146,7 +203,7 @@ async function studio(ctx,req,env) {
   if (panel==='inbox') return inbox(ctx,req,db);
   const slug = ctx.url.searchParams.get('edit') || ctx.url.searchParams.get('preview');
   const previous = slug ? await dbFirst(db,'SELECT * FROM articles WHERE slug=?',slug) : null;
-  if (slug && !previous) return studioPage(ctx,'<p>Maqaalka lama helin.</p>',{status:404});
+  if (slug && !previous) return studioPage(ctx,'<p>Maqaalka lama helin.</p>',{status:404,nav:false});
   if (req.method==='GET' && previous && ctx.url.searchParams.has('preview')) {ctx.lang=previous.language||'so';return article(ctx,previous,[],true);}
   let current = previous || {author:ctx.profile.author};
   let notice = ctx.url.searchParams.get('saved') ? 'Isbeddellada waa la kaydiyay.' : '';
@@ -206,11 +263,11 @@ async function studio(ctx,req,env) {
     <section class="studio-library"><form class="studio-filter" method="get" action="/studio"><label>Raadi cinwaan<input type="search" name="q" maxlength="100" value="${escape(query)}"></label><label>Xaaladda<select name="status">${options(['all','live','draft'],view,{all:'Dhammaan',live:'La daabacay',draft:'Qabyo-qoraal'})}</select></label><button>Raadi</button></form>
     ${rows.length ? '<div class="studio-table"><table><thead><tr><th>Maqaalka</th><th>Qaybta</th><th>Xaaladda</th><th>La cusboonaysiiyay</th></tr></thead><tbody>'+rows.map(a=>'<tr><td><a href="/studio?edit='+a.slug+'">'+escape(a.title)+'</a></td><td>'+escape(categoryLabels[a.category])+'</td><td>'+(a.published_at?'La daabacay':'Qabyo-qoraal')+'</td><td>'+date(a.updated_at)+'</td></tr>').join('')+'</tbody></table></div>' : '<p class="meta">Wax maqaal ah lama helin.</p>'}
     ${pages>1?'<nav class="studio-pages" aria-label="Bogagga">'+(page>1?'<a href="'+escape(pageLink(page-1))+'">← Hore</a>':'')+'<span>'+page+' / '+pages+'</span>'+(page<pages?'<a href="'+escape(pageLink(page+1))+'">Xiga →</a>':'')+'</nav>':''}</section>`;
-  if (req.method==='GET' && !previous && !ctx.url.searchParams.has('new')) return studioPage(ctx,publisherNav+editionAdminNav+dashboard);
+  if (req.method==='GET' && !previous && !ctx.url.searchParams.has('new')) return studioPage(ctx,dashboard);
   const theme = imageNames.find(n=>current.image==='/images/'+n+'.webp') || 'bitcoin';
   const previewUrl = ctx.origin+'/article/'+(current.slug||'cinwaanka-maqaalka');
   const seoPanel = '<fieldset class="seo-panel"><legend>SEO iyo horudhaca raadinta</legend>'+field('seo_title','Cinwaanka raadinta',current.seo_title,'maxlength="70"')+field('seo_description','Sharraxaadda raadinta',current.seo_description,'maxlength="170"')+'<p class="meta">Haddii aad ka tagto meelahan bannaan, cinwaanka iyo soo koobidda maqaalka ayaa la adeegsanayaa.</p><div class="seo-preview"><span id="seo-url">'+escape(previewUrl)+'</span><strong id="seo-title">'+escape(current.seo_title||(current.title?current.title+' | Zaki News':'Cinwaanka maqaalka | Zaki News'))+'</strong><p id="seo-description">'+escape(current.seo_description||current.summary||'Sharraxaadda maqaalka ayaa halkan ka muuqanaysa.')+'</p></div><ul class="seo-check"><li id="seo-length"></li><li id="seo-summary"></li><li id="seo-heading"></li></ul></fieldset>';
-  return studioPage(ctx,publisherNav+editionAdminNav+message(notice)+'<div class="studio-editor"><a class="text-link" href="/studio">← Dhammaan maqaallada</a><script defer src="/studio-preview.js"></script><form method="post" class="form"><h2>'+ (previous?'Wax ka beddel maqaalka':'Maqaal cusub')+'</h2>'+field('title','Cinwaanka maqaalka',current.title,'required maxlength="140"')+field('slug','Qaybta URL-ka',current.slug,previous?'disabled':'maxlength="100" placeholder="Cinwaanka ayaa laga samaynayaa haddii ay bannaan tahay"')+field('summary','Soo koobidda maqaalka',current.summary,'required maxlength="240"')+'<label>Qaybta<select name="category">'+options([...mainCategories,...categories.filter(c=>!mainCategories.includes(c))],current.category||'Crypto',categoryLabels)+'</select></label>'+'<label>Luqadda maqaalka<select name="language">'+options(['so','en'],current.language||'so',{so:'Af-Soomaali',en:'English'})+'</select></label>'+field('author','Magaca qoraaga',current.author,'required maxlength="90"')+'<label>Qoraalka maqaalka<textarea name="body" required maxlength="60000">'+escape(current.body)+'</textarea><span class="meta">Sadar bannaan ku kala saar tuducyada. Cinwaannada ku bilow ##, xiriiriyeyaashana u qor [isha](https://…).</span></label><label>Sawirrada diyaarsan<select name="theme">'+options(imageNames,theme,imageLabels)+'</select></label>'+field('image','Xiriirka sawir gaar u ah maqaalka',current.image?.startsWith('/images/')?'':current.image,'type="url" maxlength="1000"')+field('image_alt','Sharraxaadda sawirka (waa qasab haddii aad geliso sawirkaaga)',current.image_alt,'maxlength="180"')+seoPanel+'<div class="actions"><button name="action" value="save" class="secondary">'+(previous?.published_at?'Kaydi isbeddellada maqaalka la daabacay':'Kaydi qabyo-qoraalka')+'</button>'+(!previous?.published_at?'<button name="action" value="publish">Daabac maqaalka</button>':'<button class="secondary" name="action" value="unpublish" formnovalidate>Ka saar daabacaadda</button>')+(previous?'<a class="btn secondary" href="/studio?preview='+slug+'">Eeg horudhaca</a>':'')+(previous?.published_at?'<a class="btn secondary" href="'+storyUrl(previous)+'">Akhri maqaalka</a>':'')+'</div></form></div>',{status});
+  return studioPage(ctx,message(notice)+'<div class="studio-editor"><a class="text-link" href="/studio">← Dhammaan maqaallada</a><script defer src="/studio-preview.js"></script><form method="post" class="form"><h2>'+ (previous?'Wax ka beddel maqaalka':'Maqaal cusub')+'</h2>'+field('title','Cinwaanka maqaalka',current.title,'required maxlength="140"')+field('slug','Qaybta URL-ka',current.slug,previous?'disabled':'maxlength="100" placeholder="Cinwaanka ayaa laga samaynayaa haddii ay bannaan tahay"')+field('summary','Soo koobidda maqaalka',current.summary,'required maxlength="240"')+'<label>Qaybta<select name="category">'+options([...mainCategories,...categories.filter(c=>!mainCategories.includes(c))],current.category||'Crypto',categoryLabels)+'</select></label>'+'<label>Luqadda maqaalka<select name="language">'+options(['so','en'],current.language||'so',{so:'Af-Soomaali',en:'English'})+'</select></label>'+field('author','Magaca qoraaga',current.author,'required maxlength="90"')+'<label>Qoraalka maqaalka<textarea name="body" required maxlength="60000">'+escape(current.body)+'</textarea><span class="meta">Sadar bannaan ku kala saar tuducyada. Cinwaannada ku bilow ##, xiriiriyeyaashana u qor [isha](https://…).</span></label><label>Sawirrada diyaarsan<select name="theme">'+options(imageNames,theme,imageLabels)+'</select></label>'+field('image','Xiriirka sawir gaar u ah maqaalka',current.image?.startsWith('/images/')?'':current.image,'type="url" maxlength="1000"')+field('image_alt','Sharraxaadda sawirka (waa qasab haddii aad geliso sawirkaaga)',current.image_alt,'maxlength="180"')+seoPanel+'<div class="actions"><button name="action" value="save" class="secondary">'+(previous?.published_at?'Kaydi isbeddellada maqaalka la daabacay':'Kaydi qabyo-qoraalka')+'</button>'+(!previous?.published_at?'<button name="action" value="publish">Daabac maqaalka</button>':'<button class="secondary" name="action" value="unpublish" formnovalidate>Ka saar daabacaadda</button>')+(previous?'<a class="btn secondary" href="/studio?preview='+slug+'">Eeg horudhaca</a>':'')+(previous?.published_at?'<a class="btn secondary" href="'+storyUrl(previous)+'">Akhri maqaalka</a>':'')+'</div></form></div>',{status});
 }
 
 export default { async fetch(req,env,work) {

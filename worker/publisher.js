@@ -7,7 +7,6 @@ const profileFields = {
 };
 const defaultProfile = {author:'',bio:'',photo:'',email:'info@zakariyaacademy.com',website:academy,youtube:channel,x:'https://x.com/zakariyasharif9',instagram:'https://www.instagram.com/zakariya__sharif/',facebook:'https://www.facebook.com/official.zakariya.sharif',tiktok:'https://www.tiktok.com/@zakariyaacademy',telegram:'https://t.me/ZakariyaAcademy1',substack:'https://substack.com/@zakariyasharif',discord:'https://discord.gg/g2kBMMA9TC'};
 const validEmail = value => /^[\w.!#$%&'*+/=?^`{|}~-]+@[\w-]+(?:\.[\w-]+)+$/.test(value);
-const publisherNav = '<nav class="publisher-nav" aria-label="Maamulka"><a href="/studio">Maqaallada</a><a href="/studio?panel=videos">Muuqaallada · Videos</a><a href="/studio?panel=profile">Qoraaga iyo xiriirrada</a><a href="/studio?panel=inbox">Farriimaha</a><a href="/signout-with-chatgpt?returnTo=%2F" target="_top">Ka bax</a></nav>';
 function externalArrowIcon(){
   return '<svg class="ed-ext-arrow" viewBox="0 0 12 12" width="12" height="12" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.2 8.8L8.8 3.2"/><path d="M5 3.2h3.8V7"/></svg>';
 }
@@ -51,7 +50,7 @@ async function publisherSettings(ctx,req,db) {
   }
   const detailFields = Object.entries(profileFields).map(([key,[label,max]])=>key==='bio'?'<label>'+label+'<textarea name="bio" maxlength="600">'+escape(data.bio)+'</textarea></label>':field(key,label,data[key],(key==='email'?'type="email" ':['website','photo'].includes(key)?'type="url" ':'')+'maxlength="'+max+'"')).join('');
   const socialFields = Object.entries(socialLabels).map(([key,label])=>field(key,label,data[key],'type="url" maxlength="1000" placeholder="https://"')).join('');
-  return studioPage(ctx,publisherNav+message(notice)+'<form method="post" action="/studio?panel=profile" class="form studio-editor"><h2>Xogta qoraaga iyo daabacaha</h2><p class="meta">Xogtan waxay ka muuqanaysaa bogagga qoraaga, xiriirka iyo asturnaanta.</p>'+detailFields+'<h2>Baraha bulshada</h2><div class="profile-fields">'+socialFields+'</div><button>Kaydi xogta</button></form>',{status});
+  return studioPage(ctx,message(notice)+'<form method="post" action="/studio?panel=profile" class="form studio-editor"><h2>Xogta qoraaga iyo daabacaha</h2><p class="meta">Xogtan waxay ka muuqanaysaa bogagga qoraaga, xiriirka iyo asturnaanta.</p>'+detailFields+'<h2>Baraha bulshada</h2><div class="profile-fields">'+socialFields+'</div><button>Kaydi xogta</button></form>',{status});
 }
 async function inbox(ctx,req,db) {
   if(ctx.url.searchParams.has('export')){
@@ -67,8 +66,17 @@ async function inbox(ctx,req,db) {
     return redirect('/studio?panel=inbox');
   }
   const list=await dbAll(db,'SELECT * FROM contacts ORDER BY id DESC LIMIT 100');
-  const messages=list.map(m=>'<details class="inbox-item"><summary>'+escape(m.subject)+' <span class="meta">· '+escape(m.name)+' · '+date(m.created_at)+'</span></summary><p class="meta">Jawaab: <a href="'+replyTo(m.email)+'">'+escape(m.email)+'</a></p><p class="inbox-body">'+escape(m.body)+'</p><form method="post" action="/studio?panel=inbox"><button class="secondary" name="delete" value="'+m.id+'">Tirtir farriinta</button></form></details>').join('');
-  return studioPage(ctx,publisherNav+'<h2>Farriimaha soo galay</h2><a class="btn" href="/studio?panel=inbox&amp;export=1">Soo dejiso CSV</a>'+(messages||'<p>Weli farriimo ma jiraan.</p>'));
+  const stamps=await dbAll(db,'SELECT created_at FROM contacts');
+  const total=stamps.length;
+  const periods=studioPeriodCounts(stamps.map(r=>r.created_at));
+  const messages=list.map(m=>'<article class="st-msg" data-st-row data-st-text="'+escape((m.subject||'')+' '+(m.name||'')+' '+(m.email||'')).toLowerCase()+'"><div class="st-msg-side">'+studioAvatar(m.name||m.email)+'</div><div class="st-msg-main"><div class="st-msg-top"><h3>'+escape(m.subject)+'</h3><time datetime="'+escape(m.created_at||'')+'">'+date(m.created_at)+'</time></div><p class="st-msg-meta">'+escape(m.name)+' · '+escape(m.email)+'</p><p class="st-msg-body">'+escape(m.body)+'</p><div class="st-msg-actions"><a class="st-reply" href="'+replyTo(m.email)+'">Jawaab</a><form method="post" action="/studio?panel=inbox" data-st-confirm="Ma rabtaa in aad tirtirto farriintan?"><button class="secondary st-delete" name="delete" value="'+m.id+'">Tirtir</button></form></div></div></article>').join('');
+  const empty=total?'':'<div class="st-empty"><strong>Weli farriimo ma jiraan.</strong><p>Farriimaha foomka xiriirka ayaa halkan ka soo muuqanaya.</p></div>';
+  const listBlock='<div class="st-inbox" data-st-list>'+(messages||'')+'<p class="st-filter-empty" data-st-empty-filter hidden>Wax lama helin.</p></div>';
+  return studioPage(ctx,
+    '<section class="st-head"><div><h2>Farriimaha soo galay</h2><p class="st-lead">'+total+(total===1?' farriin':' farriimood')+'</p></div>'+studioCsvLink('/studio?panel=inbox&amp;export=1','Soo dejiso CSV')+'</section>'+
+    studioStats([[total,'Dhammaan'],[periods.today,'Maanta'],[periods.week,'Toddobaadkan']])+
+    (total?studioSearch('Raadi magac, iimayl ama cinwaan')+listBlock:empty)
+  );
 }
 async function contact(ctx,req,db) {
   const p=ctx.profile;
@@ -221,7 +229,7 @@ async function videoEditor(ctx,req,db){
       return redirect(editionHref(ctx,'/studio?panel=videos&saved=1'));
     }
   }
-  return studioPage(ctx,publisherNav+'<form class="form studio-editor" method="post"><h2>'+t(ctx,'Muuqaallada YouTube','YouTube videos')+'</h2>'+message(error||(ctx.url.searchParams.has('saved')?t(ctx,'Waa la daabacay.','Collection published.') : ''))+'<label>'+t(ctx,'Sadar kasta geli cinwaanka iyo xiriirka YouTube, adigoo u kala saaraya |. Muuqaalka ugu horreeya wuxuu ka soo muuqanayaa bogga hore.','Enter one video per line as Title | YouTube link. The first video appears on the homepage.')+'<textarea name="videos" rows="10">'+escape(draft)+'</textarea></label><button>'+t(ctx,'Daabac muuqaallada','Publish videos')+'</button><a href="'+editionHref(ctx,'/videos')+'">'+t(ctx,'Eeg muuqaallada','View videos')+'</a></form>',{status:error?400:200});
+  return studioPage(ctx,'<form class="form studio-editor" method="post"><h2>'+t(ctx,'Muuqaallada YouTube','YouTube videos')+'</h2>'+message(error||(ctx.url.searchParams.has('saved')?t(ctx,'Waa la daabacay.','Collection published.') : ''))+'<label>'+t(ctx,'Sadar kasta geli cinwaanka iyo xiriirka YouTube, adigoo u kala saaraya |. Muuqaalka ugu horreeya wuxuu ka soo muuqanayaa bogga hore.','Enter one video per line as Title | YouTube link. The first video appears on the homepage.')+'<textarea name="videos" rows="10">'+escape(draft)+'</textarea></label><button>'+t(ctx,'Daabac muuqaallada','Publish videos')+'</button><a href="'+editionHref(ctx,'/videos')+'">'+t(ctx,'Eeg muuqaallada','View videos')+'</a></form>',{status:error?400:200});
 }
 
 const resourceGroups = [

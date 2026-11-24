@@ -135,7 +135,6 @@ function confirmationPage(ctx,view,opts={}){
   '</div>';
   return layout(ctx,view.title,body,{...opts,noindex:true});
 }
-const editionAdminNav='<nav class="publisher-nav"><a href="/admin?panel=subscribers">Isdiiwaangeliyeyaasha</a><a href="/admin?panel=sections">Qaybaha bogga</a><a href="/admin?panel=calendar">Jadwalka iyo unlocks</a></nav>';
 async function editionAdmin(ctx,req,db,panel){
   if(panel==='subscribers'){
     if(ctx.url.searchParams.has('export')){
@@ -152,7 +151,16 @@ async function editionAdmin(ctx,req,db,panel){
     const pages=Math.max(1,Math.ceil(total/50));
     const page=Math.min(pages,Math.max(1,parseInt(ctx.url.searchParams.get('page'),10)||1));
     const rows=await dbAll(db,'SELECT * FROM subscribers ORDER BY created_at DESC,email LIMIT 50 OFFSET ?',(page-1)*50);
-    return studioPage(ctx,publisherNav+editionAdminNav+'<h2>Isdiiwaangeliyeyaasha ('+total+')</h2><a class="btn" href="/admin?panel=subscribers&amp;export=1">Soo dejiso CSV</a><div class="studio-table"><table><thead><tr><th>Iimayl</th><th>Taariikh</th><th></th></tr></thead><tbody>'+rows.map(r=>'<tr><td>'+escape(r.email)+'</td><td>'+date(r.created_at)+'</td><td><form method="post" action="/admin?panel=subscribers"><button class="secondary" name="email" value="'+escape(r.email)+'">Ka saar</button></form></td></tr>').join('')+'</tbody></table></div><div class="studio-pages">'+(page>1?'<a href="/admin?panel=subscribers&amp;page='+(page-1)+'">← Hore</a>':'')+(page<pages?'<a href="/admin?panel=subscribers&amp;page='+(page+1)+'">Xiga →</a>':'')+'</div>');
+    const stamps=await dbAll(db,'SELECT created_at FROM subscribers');
+    const periods=studioPeriodCounts(stamps.map(r=>r.created_at));
+    const table=rows.length?'<div class="st-table-card" data-st-list><table class="st-table"><thead><tr><th>Iimayl</th><th>Taariikh</th><th><span class="st-sr">Ficillada</span></th></tr></thead><tbody>'+rows.map(r=>'<tr data-st-row data-st-text="'+escape(String(r.email||'').toLowerCase())+'"><td><span class="st-person">'+studioAvatar(r.email)+'<span>'+escape(r.email)+'</span></span></td><td>'+date(r.created_at)+'</td><td><form method="post" action="/admin?panel=subscribers" data-st-confirm="Ma rabtaa in aad ka saarto '+escape(r.email)+' liiska warsidaha?"><button class="secondary st-delete" name="email" value="'+escape(r.email)+'">Ka saar</button></form></td></tr>').join('')+'</tbody></table><p class="st-filter-empty" data-st-empty-filter hidden>Wax lama helin.</p></div>':'<div class="st-empty"><strong>Weli isdiiwaangeliyeyaal ma jiraan.</strong><p>Marka qof isdiiwaangeliyo warsidaha, iimaylkiisu wuxuu halkan ka soo muuqanayaa.</p></div>';
+    return studioPage(ctx,
+      '<section class="st-head"><div><h2>Isdiiwaangeliyeyaasha</h2><p class="st-lead">'+total+(total===1?' isdiiwaangeliye':' isdiiwaangeliyeyaal')+'</p></div>'+studioCsvLink('/admin?panel=subscribers&amp;export=1','Soo dejiso CSV')+'</section>'+
+      studioStats([[total,'Dhammaan'],[periods.today,'Maanta'],[periods.week,'Toddobaadkan']])+
+      (rows.length?studioSearch('Raadi iimayl'):'')+
+      table+
+      '<div class="studio-pages">'+(page>1?'<a href="/admin?panel=subscribers&amp;page='+(page-1)+'">← Hore</a>':'')+(page<pages?'<a href="/admin?panel=subscribers&amp;page='+(page+1)+'">Xiga →</a>':'')+'</div>'
+    );
   }
   if(panel==='sections'){
     if(req.method==='POST'){
@@ -161,7 +169,7 @@ async function editionAdmin(ctx,req,db,panel){
       await dbRun(db,"INSERT INTO settings (key,value) VALUES ('sections',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",JSON.stringify(settings));
       return redirect('/admin?panel=sections&saved=1');
     }
-    return studioPage(ctx,publisherNav+editionAdminNav+message(ctx.url.searchParams.has('saved')?'Waa la kaydiyay.':'')+'<form class="form studio-editor" method="post"><h2>Qaybaha bogga</h2>'+Object.entries(switchLabels).map(([k,v])=>'<label class="consent"><input type="checkbox" name="'+k+'"'+(enabled(ctx,k)?' checked':'')+'>'+v[0]+'</label>').join('')+'<button>Kaydi</button></form>');
+    return studioPage(ctx,message(ctx.url.searchParams.has('saved')?'Waa la kaydiyay.':'')+'<form class="form studio-editor" method="post"><h2>Qaybaha bogga</h2>'+Object.entries(switchLabels).map(([k,v])=>'<label class="consent"><input type="checkbox" name="'+k+'"'+(enabled(ctx,k)?' checked':'')+'>'+v[0]+'</label>').join('')+'<button>Kaydi</button></form>');
   }
   let notice='';
   const editId=ctx.url.searchParams.get('edit_event');
@@ -190,7 +198,7 @@ async function editionAdmin(ctx,req,db,panel){
   const rows=await dbAll(db,'SELECT * FROM schedules ORDER BY event_date DESC,id DESC LIMIT 100');
   const value=current||{};
   const controls='<form class="form studio-editor" method="post"><label>Nooca<select name="kind">'+options(['calendar','unlocks'],value.kind||'calendar',{calendar:'Dhacdo dhaqaale',unlocks:'Token unlock'})+'</select></label>'+field('title','Dhacdada ama token-ka',value.title,'required maxlength="140"')+field('when','Taariikhda',value.event_date,'type="date" required')+field('source','Isha rasmiga ah',value.source,'type="url" required maxlength="1000"')+'<h3>Natiijooyinka dhaqaalaha</h3>'+field('country','Dalka (ISO: US, GB, DE)',value.country,'maxlength="2" pattern="[A-Za-z]{2}"')+field('release_time','Waqtiga ET',value.release_time,'type="time"')+field('actual','Actual',value.actual,'maxlength="40"')+field('forecast','Forecast',value.forecast,'maxlength="40"')+field('previous','Previous',value.previous,'maxlength="40"')+'<label>Muhiimadda<select name="importance">'+options(['','high','medium','low'],value.importance||'',{'':'Otomaatig',high:'Sare',medium:'Dhexe',low:'Hoose'})+'</select></label><h3>Token unlocks</h3>'+field('amount','Tirada tokennada',value.amount,'type="number" min="0" step="any"')+field('usd','Qiimaha USD',value.usd,'type="number" min="0" step="any"')+field('supply','Saamiga sahayda (%)',value.supply,'type="number" min="0" max="100" step="any"')+'<button>'+(current?'Kaydi isbeddellada':'Ku dar')+'</button></form>';
-  return studioPage(ctx,publisherNav+editionAdminNav+message(notice)+controls+'<ul class="admin-list">'+rows.map(r=>'<li><form method="post"><span>'+escape(r.title)+' · '+escape(r.event_date)+'</span> <a href="/admin?panel=calendar&amp;edit_event='+r.id+'">Wax ka beddel</a> <button class="secondary" name="delete" value="'+r.id+'">Tirtir</button></form></li>').join('')+'</ul>',{status:notice?400:200});
+  return studioPage(ctx,message(notice)+controls+'<ul class="admin-list">'+rows.map(r=>'<li><form method="post"><span>'+escape(r.title)+' · '+escape(r.event_date)+'</span> <a href="/admin?panel=calendar&amp;edit_event='+r.id+'">Wax ka beddel</a> <button class="secondary" name="delete" value="'+r.id+'">Tirtir</button></form></li>').join('')+'</ul>',{status:notice?400:200});
 }
 
 const mainCategories=['Crypto','Stocks','Forex','Economy','Central Banks','Tech','Politics','Education'];
