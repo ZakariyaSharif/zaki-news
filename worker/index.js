@@ -29,7 +29,7 @@ const meta = (a,profile,ctx) => '<div class="meta">'+(profile?.author===a.author
 const card = (a,ctx) => '<article class="card"><a href="'+storyUrl(a)+'">'+storyImage(a)+'</a><div class="card-body"><a class="eyebrow" href="'+catUrl(canonicalCategory(a.category))+'">'+escape(categoryName(ctx,a.category))+'</a><h3><a href="'+storyUrl(a)+'">'+escape(a.title)+'</a></h3><p>'+escape(a.summary)+'</p></div></article>';
 const grid = (list,ctx,extra='') => '<div class="grid">'+list.map(a=>card(a,ctx)).join('')+extra+'</div>';
 function featuredVideo(ctx,{id,title}){
-  return '<article class="card featured-video"><iframe src="https://www.youtube-nocookie.com/embed/'+id+'" title="'+escape(title)+'" loading="lazy" width="560" height="315" allow="encrypted-media; picture-in-picture; fullscreen" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe><div class="card-body"><span class="eyebrow">Zakariya Academy</span><h3>'+escape(title)+'</h3><a class="text-link" href="https://youtu.be/'+id+'" rel="noopener noreferrer">'+t(ctx,'Ka daawo YouTube','Watch on YouTube')+' ↗</a></div></article>';
+  return '<article class="card featured-video"><iframe src="https://www.youtube-nocookie.com/embed/'+id+'" title="'+escape(title)+'" loading="lazy" width="560" height="315" allow="encrypted-media; picture-in-picture; fullscreen" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe><div class="card-body"><span class="eyebrow">Zakariya Academy</span><h3>'+escape(title)+'</h3><a class="text-link ed-brand-link" href="https://youtu.be/'+id+'" rel="noopener noreferrer" target="_blank">'+brandLogo('youtube.svg',18)+'<span>'+t(ctx,'Ka daawo YouTube','Watch on YouTube')+'</span>'+externalArrowIcon()+'</a></div></article>';
 }
 const teaser = (a,ctx) => '<article class="teaser"><a href="'+storyUrl(a)+'">'+storyImage(a)+'</a><div><span class="eyebrow">'+escape(categoryName(ctx,a.category))+'</span><h3><a href="'+storyUrl(a)+'">'+escape(a.title)+'</a></h3><span class="meta">'+readingLabel(ctx,a)+'</span></div></article>';
 const links = s => escape(s).replace(/\[([^\]\n]+)\]\((https:\/\/[^\s)]+)\)/g,(_,label,url) => '<a href="'+url+'" rel="noopener noreferrer">'+label+'</a>');
@@ -222,6 +222,13 @@ export default { async fetch(req,env,work) {
   if(path.startsWith('/coin-logo/')){
     const file=path.slice(11);
     if(Object.hasOwn(coinAssets,file)) return new Response(Uint8Array.from(atob(coinAssets[file]),c=>c.charCodeAt(0)),{headers:{'content-type':file.endsWith('.svg')?'image/svg+xml':'image/png','cache-control':'public, max-age=86400','x-content-type-options':'nosniff'}});
+  }
+  if(path.startsWith('/brand-logo/')){
+    const file=path.slice(12);
+    if(typeof brandAssets!=='undefined'&&Object.hasOwn(brandAssets,file)){
+      const type=file.endsWith('.svg')?'image/svg+xml':file.endsWith('.png')?'image/png':'application/octet-stream';
+      return new Response(Uint8Array.from(atob(brandAssets[file]),c=>c.charCodeAt(0)),{headers:{'content-type':type,'cache-control':'public, max-age=86400','x-content-type-options':'nosniff'}});
+    }
   }
   if (!['GET','HEAD'].includes(req.method) && !(['POST'].includes(req.method) && ['/studio','/admin','/contact','/newsletter'].includes(path))) return text('Habkan codsiga lama oggola.',405);
   const profile = await dbFirst(env.DB,"SELECT value FROM settings WHERE key='publisher'");

@@ -121,10 +121,10 @@
 .terminal-page .terminal-rail a[aria-current=page],.terminal-page .terminal-mobile a[aria-current=page]{color:var(--bitcoin-ink);background:color-mix(in srgb,var(--bitcoin-orange) 13%,transparent)}
 .market-dir-head,.market-directory-tools nav,.calendar-query{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
 .market-dir-head{justify-content:space-between}
-.market-dir-head>a,.market-directory-tools a{color:var(--bitcoin-ink);font-weight:700}
+.market-dir-head>a,.market-directory-tools a{color:var(--orange);font-weight:700}
 .market-directory-tools{margin-block:26px}
 .market-directory-tools nav{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr))}
-.market-directory-tools a{display:flex;justify-content:space-between;align-items:center;padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
+.market-directory-tools a{display:flex;justify-content:flex-start;align-items:center;gap:10px;padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
 .market-asset-tabs{display:flex;flex-wrap:wrap;margin:18px 0}
 .market-asset-tabs a[aria-current=page]{background:color-mix(in srgb,var(--bitcoin-orange) 12%,transparent);border-color:var(--bitcoin-orange)}
 .directory-prices [data-feed=prices]{max-width:none}
@@ -441,8 +441,8 @@ button.ed-search-submit{
 .ed-tool strong{display:block;font-size:13px;font-weight:700;line-height:1.25}
 .ed-tool small{display:block;margin-top:2px;color:var(--dim);font-size:11.5px;line-height:1.35}
 .ed-mega-follow{grid-column:1/-1;display:flex;gap:16px;padding-top:14px;border-top:1px solid var(--line);font-size:13px;font-weight:600}
-.ed-mega-follow a{color:var(--ink);text-decoration:none}
-.ed-mega-follow a:hover{color:var(--orange)}
+.ed-mega-follow a{color:var(--orange);text-decoration:none}
+.ed-mega-follow a:hover{color:var(--orange);opacity:.88}
 .ed-mob-ticker{display:none;gap:16px;padding:8px 16px;border-bottom:1px solid var(--line);font-size:12.5px;font-weight:650;overflow:auto;scrollbar-width:none}
 .ed-mob-ticker a{display:inline-flex;align-items:center;gap:6px;color:var(--ink);text-decoration:none;white-space:nowrap}
 .ed-mob-ticker [data-change][data-direction=up],.ed-chg[data-direction=up]{color:var(--good)}
@@ -785,3 +785,16 @@ a.ed-coin-link:hover .ed-row-affordance{opacity:1}
 .vz-panel a.ed-coin-link{margin-top:10px;font-weight:700}
 .heat-tile[data-chart-href]{cursor:pointer}
 .coin-strip a.ed-coin-link{display:flex}
+
+/* Brand logos and orange external arrows (replaces ↗ emoji) */
+.ed-brand-link,.ed-ext-link{color:var(--orange);display:inline-flex;align-items:center;gap:8px;text-decoration:none;font-weight:inherit}
+.ed-brand-link:hover,.ed-ext-link:hover{color:var(--orange);opacity:.88}
+.ed-brand-logo{width:22px;height:22px;border-radius:6px;object-fit:contain;background:#fff;flex:none;box-shadow:0 0 0 1px color-mix(in srgb,var(--line) 80%,transparent)}
+.ed-mega-follow .ed-brand-logo,.footer .ed-brand-logo,.market-dir-head .ed-brand-logo{width:20px;height:20px;border-radius:5px}
+.ed-ext-arrow{color:var(--orange);flex:none;width:12px;height:12px;stroke:currentColor}
+.market-directory-tools a.ed-brand-link{color:var(--orange)}
+.market-directory-tools .ed-brand-logo{width:22px;height:22px}
+.footer.site-footer .footer-col a.ed-brand-link,.footer.site-footer a.ed-brand-link{display:inline-flex}
+.ed-mega-follow{flex-wrap:wrap;align-items:center}
+.text-link.ed-brand-link{display:inline-flex}
+.resource-card .ed-ext-arrow{margin-left:auto;color:var(--orange)}

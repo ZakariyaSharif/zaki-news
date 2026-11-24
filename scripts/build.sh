@@ -10,6 +10,7 @@ images={p.name:base64.b64encode(p.read_bytes()).decode() for p in (w/'images').g
 assets='const css='+json.dumps((w/'style.css').read_text())+';\nconst images='+json.dumps(images)+';\n'
 assets+='const styleVersion='+json.dumps(hashlib.sha256((w/'style.css').read_bytes()).hexdigest()[:12])+';\n'
 assets+='const coinAssets='+json.dumps({p.name:base64.b64encode(p.read_bytes()).decode() for p in (w/'coins').glob('*') if p.suffix in ('.svg','.png')})+';\n'
+assets+='const brandAssets='+json.dumps({p.name:base64.b64encode(p.read_bytes()).decode() for p in (w/'brands').glob('*') if p.suffix in ('.svg','.png')})+';\n'
 assets+='const studioScript='+json.dumps((w/'studio-preview.js').read_text())+';\n'
 assets+='const etfClient='+json.dumps((w/'etf-client.js').read_text())+';\n'
 tv_links=(w/'tv-links.js').read_text()+'\n'

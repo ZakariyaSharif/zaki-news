@@ -8,7 +8,25 @@ const profileFields = {
 const defaultProfile = {author:'',bio:'',photo:'',email:'info@zakariyaacademy.com',website:academy,youtube:channel,x:'https://x.com/zakariyasharif9',instagram:'https://www.instagram.com/zakariya__sharif/',facebook:'https://www.facebook.com/official.zakariya.sharif',tiktok:'https://www.tiktok.com/@zakariyaacademy',telegram:'https://t.me/ZakariyaAcademy1',substack:'https://substack.com/@zakariyasharif',discord:'https://discord.gg/g2kBMMA9TC'};
 const validEmail = value => /^[\w.!#$%&'*+/=?^`{|}~-]+@[\w-]+(?:\.[\w-]+)+$/.test(value);
 const publisherNav = '<nav class="publisher-nav" aria-label="Maamulka"><a href="/studio">Maqaallada</a><a href="/studio?panel=videos">Muuqaallada · Videos</a><a href="/studio?panel=profile">Qoraaga iyo xiriirrada</a><a href="/studio?panel=inbox">Farriimaha</a><a href="/signout-with-chatgpt?returnTo=%2F" target="_top">Ka bax</a></nav>';
-const publicLink = (url,label) => '<a href="'+escape(url)+'" rel="noopener noreferrer">'+escape(label)+'</a>';
+function externalArrowIcon(){
+  return '<svg class="ed-ext-arrow" viewBox="0 0 12 12" width="12" height="12" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.2 8.8L8.8 3.2"/><path d="M5 3.2h3.8V7"/></svg>';
+}
+function brandLogo(file,size){
+  const name=String(file||'');
+  const s=Number(size)||22;
+  if(!name||typeof brandAssets==='undefined'||!Object.hasOwn(brandAssets,name)) return '';
+  return '<img class="ed-brand-logo" src="/brand-logo/'+name+'" alt="" width="'+s+'" height="'+s+'" loading="lazy">';
+}
+function brandTextLink(href,label,file,external,size){
+  const extra=external?' rel="noopener noreferrer" target="_blank"':'';
+  return '<a class="ed-brand-link" href="'+escape(href)+'"'+extra+'>'+brandLogo(file,size||22)+'<span>'+label+'</span>'+(external?externalArrowIcon():'')+'</a>';
+}
+const publicLink = (url,label) => {
+  const raw=String(label??'');
+  const hasArrow=raw.includes('↗');
+  const text=escape(raw.replace(/\s*↗\s*/g,' ').replace(/\s+/g,' ').trim());
+  return '<a'+(hasArrow?' class="ed-ext-link"':'')+' href="'+escape(url)+'" rel="noopener noreferrer"'+(hasArrow?' target="_blank"':'')+'>'+text+(hasArrow?' '+externalArrowIcon():'')+'</a>';
+};
 const socials = profile => Object.entries(socialLabels).filter(([key])=>profile[key]).map(([key,label])=>'<a href="'+escape(profile[key])+'" rel="noopener noreferrer">'+(socialAssets[key]?'<img src="/social-logo/'+key+'.svg" width="16" height="16" alt=""> ':'')+escape(label)+'</a>').join('');
 const replyTo = email => 'mailto:'+escape(email);
 const redirect = location => new Response(null,{status:303,headers:{location}});
@@ -157,7 +175,7 @@ async function videoList(db){
 }
 function videosPage(ctx,videos){
   const title=t(ctx,'Muuqaallada','Videos');
-  return layout(ctx,title,'<header class="section-title"><h1>'+title+'</h1>'+publicLink(ctx.profile.youtube||channel,'Zakariya Academy ↗')+'</header>'+(videos.length?'<section class="video-gallery">'+videos.map(video=>featuredVideo(ctx,video)).join('')+'</section>':'<p>'+t(ctx,'Muuqaallada la xushay halkan ayay ka soo muuqan doonaan.','Selected videos will appear here.')+'</p>'));
+  return layout(ctx,title,'<header class="section-title"><h1>'+title+'</h1>'+brandTextLink(ctx.profile.youtube||channel,'Zakariya Academy','academy.png',true,20)+'</header>'+(videos.length?'<section class="video-gallery">'+videos.map(video=>featuredVideo(ctx,video)).join('')+'</section>':'<p>'+t(ctx,'Muuqaallada la xushay halkan ayay ka soo muuqan doonaan.','Selected videos will appear here.')+'</p>'));
 }
 function youtubeId(raw){
   try{
@@ -468,8 +486,8 @@ const resourceGroups = [
 function resourceDirectory(ctx){
   const title=t(ctx,'Xiriiriyeyaasha Zakariya','Zakariya’s resource links');
   const sections=resourceGroups.map(([en,so,rows])=>{
-    const cards=rows.map(([name,url,icon])=>'<a class="resource-card" href="'+escape(url)+'" rel="sponsored noopener noreferrer"><img src="'+escape(icon)+'" alt="" width="38" height="38" loading="lazy"><span><strong>'+escape(name)+'</strong><small>'+escape(new URL(url).hostname)+'</small></span><span aria-hidden="true">↗</span></a>').join('');
+    const cards=rows.map(([name,url,icon])=>'<a class="resource-card" href="'+escape(url)+'" rel="sponsored noopener noreferrer"><img src="'+escape(icon)+'" alt="" width="38" height="38" loading="lazy"><span><strong>'+escape(name)+'</strong><small>'+escape(new URL(url).hostname)+'</small></span>'+externalArrowIcon()+'</a>').join('');
     return '<section class="resource-section"><h2>'+escape(t(ctx,so,en))+'</h2><div class="resource-grid">'+cards+'</div></section>';
   }).join('');
-  return layout(ctx,title,'<header class="calendar-intro"><h1>'+title+'</h1><p>'+t(ctx,'Qaar ka mid ah xiriiriyeyaashan waa tixraacyo ay Zakariya Academy gunno ka heli karto.','Some links are referrals and may earn Zakariya Academy a commission.')+'</p>'+publicLink('https://linktr.ee/Official.zakariya','Zakariya Academy · Linktree ↗')+'</header>'+sections);
+  return layout(ctx,title,'<header class="calendar-intro"><h1>'+title+'</h1><p>'+t(ctx,'Qaar ka mid ah xiriiriyeyaashan waa tixraacyo ay Zakariya Academy gunno ka heli karto.','Some links are referrals and may earn Zakariya Academy a commission.')+'</p>'+brandTextLink('https://linktr.ee/Official.zakariya','Zakariya Academy · Linktree','academy.png',true,20)+'</header>'+sections);
 }

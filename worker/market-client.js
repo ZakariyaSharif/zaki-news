@@ -126,7 +126,7 @@ for(const panel of document.querySelectorAll('[data-feed]:not([data-feed="prices
         country.className='calendar-country';
         title.append(badge,country,impact,element('h2',e.title));
         const right=element('div','');right.className='calendar-event-time';
-        const source=element('a',t('Isha ↗','Source ↗'));source.href='https://www.bls.gov/schedule/';
+        const source=element('a','');source.className='ed-ext-link';source.href='https://www.bls.gov/schedule/';source.target='_blank';source.rel='noopener noreferrer';source.innerHTML=t('Isha','Source')+' <svg class="ed-ext-arrow" viewBox="0 0 12 12" width="12" height="12" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.2 8.8L8.8 3.2"/><path d="M5 3.2h3.8V7"/></svg>';
         right.append(element('span',e.time?e.time+' ET':'—'),source);
         const results=element('dl','');results.className='calendar-results';
         for(const [name,label] of [['actual',t('Dhabta','Actual')],['forecast',t('Saadaasha','Forecast')],['previous',t('Hore','Previous')]]){

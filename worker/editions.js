@@ -204,9 +204,11 @@ function footerNewsletter(ctx){
     '<button type="submit">'+t(ctx,'Isdiiwaangeli','Subscribe')+'</button></form>';
 }
 function footerCol(ctx, id, heading, links){
-  const items=links.map(([href,label,external])=>{
+  const items=links.map(([href,label,external,logo])=>{
     const extra=external?' rel="noopener noreferrer" target="_blank"':'';
-    return '<a href="'+escape(href)+'"'+extra+'>'+label+(external?' <span aria-hidden="true">↗</span>':'')+'</a>';
+    const icon=logo?brandLogo(logo,18):'';
+    const arrow=external?externalArrowIcon():'';
+    return '<a class="ed-brand-link" href="'+escape(href)+'"'+extra+'>'+icon+'<span>'+label+'</span>'+arrow+'</a>';
   }).join('');
   return '<details class="footer-col" open>'+
     '<summary>'+heading+'<span class="footer-caret" aria-hidden="true"></span></summary>'+
@@ -232,7 +234,7 @@ function siteFooter(ctx){
     ['/unlocks',['Furitaanka tokennada','Token unlocks']],
     ['/fear-greed',['Cabsi iyo Damac','Fear &amp; Greed']],
     ['/profit-calculator',['Xisaabiyaha faa’iidada','Profit calculator']],
-    ['https://zakibubble.zakariyaacademy.com',['Goobooyinka crypto','Crypto bubbles'],true],
+    ['https://zakibubble.zakariyaacademy.com',['Goobooyinka crypto','Crypto bubbles'],true,'bubble.png'],
     ['/halving',['Bitcoin halving','Bitcoin halving']],
     ['/calendar',['Jadwalka dhaqaalaha','Economic calendar']]
   ].filter(([path, , ext])=>{
@@ -240,11 +242,11 @@ function siteFooter(ctx){
     const key=path.slice(1);
     return !Object.hasOwn(toolsNav,key) || enabled(ctx,key);
   });
-  const tools=toolDefs.map(([path,labels,ext])=>[ext?path:editionHref(ctx,path),t(ctx,...labels),!!ext]);
+  const tools=toolDefs.map(([path,labels,ext,logo])=>[ext?path:editionHref(ctx,path),t(ctx,...labels),!!ext,logo]);
   const learn=[
     [editionHref(ctx,'/topic/education'),t(ctx,'Hagayaasha','Guides')],
     [editionHref(ctx,'/videos'),t(ctx,'Muuqaallada','Videos')],
-    [ctx.profile.website||academy,t(ctx,'Koorsada Zakariya Academy','Zakariya Academy courses'),true]
+    [ctx.profile.website||academy,t(ctx,'Koorsada Zakariya Academy','Zakariya Academy courses'),true,'academy.png']
   ];
   const about=[
     [editionHref(ctx,'/about'),t(ctx,'Nagu saabsan','About')],
@@ -386,9 +388,9 @@ function editorialHeader(ctx){
     return '<a class="ed-tool" href="'+escape(href)+'"'+ext+'>'+edIcon(d)+'<span><strong>'+t(ctx,...title)+'</strong><small>'+t(ctx,...blurb)+'</small></span></a>';
   }).join('');
   const follow=[
-    (ctx.profile.website||academy)?'<a href="'+escape(ctx.profile.website||academy)+'" rel="noopener noreferrer" target="_blank">Zakariya Academy ↗</a>':'',
-    ctx.profile.youtube?'<a href="'+escape(ctx.profile.youtube)+'" rel="noopener noreferrer" target="_blank">YouTube ↗</a>':'',
-    ctx.profile.discord?'<a href="'+escape(ctx.profile.discord)+'" rel="noopener noreferrer" target="_blank">Discord ↗</a>':''
+    (ctx.profile.website||academy)?brandTextLink(ctx.profile.website||academy,'Zakariya Academy','academy.png',true,20):'',
+    ctx.profile.youtube?brandTextLink(ctx.profile.youtube,'YouTube','youtube.svg',true,20):'',
+    ctx.profile.discord?brandTextLink(ctx.profile.discord,'Discord','discord.svg',true,20):''
   ].filter(Boolean).join('');
   const kicker=t(ctx,'Warbaahinta maaliyadeedka Soomaaliyeed','Somali financial journalism');
   const searchIcon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>';
