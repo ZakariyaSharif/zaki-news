@@ -53,7 +53,7 @@ function pricesFeed(){
     };
     const prices=await Promise.allSettled(marketCoins.map(([symbol])=>exchangeQuote(symbol)));
     const items=prices.filter(x=>x.status==='fulfilled').map(x=>x.value);
-    const ids={btc:'bitcoin',eth:'ethereum',sol:'solana',xrp:'ripple',ada:'cardano',doge:'dogecoin',usdt:'tether'};
+    const ids={btc:'bitcoin',eth:'ethereum',sol:'solana',xrp:'ripple',bnb:'binancecoin',ada:'cardano',doge:'dogecoin',usdt:'tether'};
     const missing=marketCoins.filter(([symbol])=>!items.some(q=>q.symbol===symbol));
     if(missing.length){
       try {
@@ -74,6 +74,14 @@ function pricesFeed(){
       return {symbol,last,change,source:'Bitstamp'};
     }));
     items.push(...backups.filter(r=>r.status==='fulfilled').map(r=>r.value));
+    const still=unresolved.filter(([symbol])=>!items.some(q=>q.symbol===symbol));
+    const binance=await Promise.allSettled(still.map(async ([symbol])=>{
+      const q=await remote('https://api.binance.com/api/v3/ticker/24hr?symbol='+symbol.toUpperCase()+'USDT');
+      const last=Number(q.lastPrice),change=Number(q.priceChangePercent);
+      if(!(last>0)||!Number.isFinite(change)) throw Error('Invalid binance quote');
+      return {symbol,last,change,source:'Binance'};
+    }));
+    items.push(...binance.filter(r=>r.status==='fulfilled').map(r=>r.value));
     if(!items.length) throw Error('No prices');
     return {items,fetchedAt:new Date().toISOString()};
   });

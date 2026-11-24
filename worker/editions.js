@@ -9,7 +9,7 @@ const switchLabels={...toolsNav,ticker:['Qiimaha tooska ah','Price ticker'],news
 const t = (ctx,so,en) => ctx.lang==='en'?en:so;
 const enabled = (ctx,key) => ctx.sections?.[key]!==false;
 const editionHref = (ctx,path) => path==='/' ? '/'+ctx.lang : ctx.lang==='en' ? path+(path.includes('?')?'&':'?')+'lang=en' : path;
-const marketCoins = coins.filter(([symbol])=> symbol!=='bnb');
+const marketCoins = coins;
 function coinIcon(symbol){
   const file=Object.keys(coinAssets).find(name=>name.startsWith(symbol+'.'));
   return file?'<img src="/coin-logo/'+file+'" alt="" width="25" height="25">':'';
@@ -130,3 +130,118 @@ const englishPolicies={
   '/privacy':['Privacy','<h2>Newsletter and contact</h2><p>We store your email and signup date when you subscribe. If you contact us through the form, we store your name, email, and message so we can reply. <a href="/contact?lang=en">Contact us</a> to request access, correction, or deletion of your information or to leave the newsletter list.</p><h2>Site features</h2><p>Search terms are included in search URLs. Your theme preference is stored on this device. Newsroom sign-in is handled by ChatGPT. External services have their own privacy policies.</p>'],
   '/about':['About Zaki News','<p>Zaki News covers crypto, stocks, the economy, central banks, tech, and politics for Somali-speaking readers. The English edition shows articles published in English.</p><h2>Editorial policy</h2><p>We identify authors and publication dates, link to sources when available, and label sample guides. <a href="/contact?lang=en">Contact the newsroom</a> with tips or corrections.</p>']
 };
+
+function footerLangHref(ctx, lang){
+  const next=new URL(ctx.url);
+  if(lang==='en') next.searchParams.set('lang','en'); else next.searchParams.delete('lang');
+  if(lang!==ctx.lang){
+    if(ctx.article?.translationSlug){next.pathname='/article/'+ctx.article.translationSlug;}
+    else if(ctx.article?.sample){
+      next.pathname=storyUrl({slug:lang==='en'?(ctx.article.slug.replace(/-en$/,'')+'-en'):ctx.article.slug.replace(/-en$/,'')});
+    }else if(ctx.article){
+      next.pathname='/';
+      next.search=lang==='en'?'?lang=en':'';
+    }
+  }
+  if(next.pathname==='/') return '/'+lang;
+  return next.pathname+next.search;
+}
+function footerLangPills(ctx){
+  const label=t(ctx,'Dooro luqadda','Choose language');
+  const item=lang=>'<a lang="'+lang+'" hreflang="'+lang+'" href="'+escape(footerLangHref(ctx,lang))+'"'+(lang===ctx.lang?' aria-current="true"':'')+'>'+lang.toUpperCase()+'</a>';
+  return '<nav class="footer-langs" aria-label="'+label+'">'+item('so')+item('en')+'</nav>';
+}
+function footerSocials(profile){
+  const order=['youtube','x','instagram','facebook','tiktok','telegram','substack'];
+  return '<nav class="footer-socials" aria-label="Social">'+order.filter(key=>profile[key]).map(key=>{
+    const label=socialLabels[key]||key;
+    const icon=socialAssets[key]?'<img src="/social-logo/'+key+'.svg" width="20" height="20" alt="">':'';
+    return '<a href="'+escape(profile[key])+'" rel="noopener noreferrer" target="_blank" aria-label="'+escape(label)+'">'+icon+'</a>';
+  }).join('')+'</nav>';
+}
+function footerNewsletter(ctx){
+  if(!enabled(ctx,'newsletter')) return '';
+  return '<form class="footer-signup" method="post" action="/newsletter">'+
+    '<input type="hidden" name="lang" value="'+ctx.lang+'">'+
+    '<p class="footer-signup-title">'+t(ctx,'Warsidaha','Newsletter')+'</p>'+
+    '<label class="footer-signup-email"><span>'+t(ctx,'Iimaylkaaga','Your email')+'</span>'+
+    '<input name="email" type="email" maxlength="254" autocomplete="email" required placeholder="'+t(ctx,'magaca@email.com','you@email.com')+'"></label>'+
+    '<label class="consent"><input type="checkbox" name="consent" value="yes" required> '+t(ctx,'Waxaan rabaa inaan helo warsidaha.','I want to receive the newsletter.')+'</label>'+
+    '<button type="submit">'+t(ctx,'Isdiiwaangeli','Subscribe')+'</button></form>';
+}
+function footerCol(ctx, id, heading, links){
+  const items=links.map(([href,label,external])=>{
+    const extra=external?' rel="noopener noreferrer" target="_blank"':'';
+    return '<a href="'+escape(href)+'"'+extra+'>'+label+(external?' <span aria-hidden="true">↗</span>':'')+'</a>';
+  }).join('');
+  return '<details class="footer-col" open>'+
+    '<summary>'+heading+'<span class="footer-caret" aria-hidden="true"></span></summary>'+
+    '<nav aria-label="'+heading+'">'+items+'</nav></details>';
+}
+function siteFooter(ctx){
+  const news=[
+    ['/latest',t(ctx,'Wararkii u dambeeyay','Latest')],
+    [catUrl('Crypto'),'Crypto'],
+    [catUrl('Stocks'),categoryName(ctx,'Stocks')],
+    [catUrl('Forex'),categoryName(ctx,'Forex')],
+    [catUrl('Economy'),categoryName(ctx,'Economy')],
+    [catUrl('Central Banks'),categoryName(ctx,'Central Banks')],
+    [catUrl('Tech'),categoryName(ctx,'Tech')],
+    [catUrl('Regulation'),categoryName(ctx,'Regulation')],
+    ['/sharia',t(ctx,...shariaTitles)]
+  ].map(([path,label])=>[editionHref(ctx,path),label]);
+  const toolDefs=[
+    ['/charts',['Jaantusyada','Charts']],
+    ['/etf-flows',['Qulqulka ETF-yada crypto','Crypto ETF flows']],
+    ['/smart-money',['Smart Money','Smart Money']],
+    ['/liquidations',['Likwideeynta','Liquidations']],
+    ['/unlocks',['Furitaanka tokennada','Token unlocks']],
+    ['/fear-greed',['Cabsi iyo Hunguri','Fear &amp; Greed']],
+    ['/profit-calculator',['Xisaabiyaha faa’iidada','Profit calculator']],
+    ['https://zakibubble.zakariyaacademy.com',['Goobooyinka crypto','Crypto bubbles'],true],
+    ['/halving',['Bitcoin halving','Bitcoin halving']],
+    ['/calendar',['Jadwalka dhaqaalaha','Economic calendar']]
+  ].filter(([path, , ext])=>{
+    if(ext) return true;
+    const key=path.slice(1);
+    return !Object.hasOwn(toolsNav,key) || enabled(ctx,key);
+  });
+  const tools=toolDefs.map(([path,labels,ext])=>[ext?path:editionHref(ctx,path),t(ctx,...labels),!!ext]);
+  const learn=[
+    [editionHref(ctx,'/topic/education'),t(ctx,'Hagayaasha','Guides')],
+    [editionHref(ctx,'/videos'),t(ctx,'Muuqaallada','Videos')],
+    [ctx.profile.website||academy,t(ctx,'Koorsada Zakariya Academy','Zakariya Academy courses'),true]
+  ];
+  const about=[
+    [editionHref(ctx,'/about'),t(ctx,'Nagu saabsan','About')],
+    [editionHref(ctx,'/contact'),t(ctx,'Xiriir','Contact')],
+    [editionHref(ctx,'/disclaimer'),t(ctx,'Afeef','Disclaimer')],
+    [editionHref(ctx,'/privacy'),t(ctx,'Asturnaanta','Privacy')],
+    [editionHref(ctx,'/terms'),t(ctx,'Shuruudaha','Terms')],
+    [editionHref(ctx,'/photo-credits'),t(ctx,'Ilaha sawirrada','Photo credits')]
+  ];
+  const year=new Date().getUTCFullYear();
+  const independence=t(
+    ctx,
+    'Zaki News waa warar crypto iyo suuqyo oo madax-bannaan, Af-Soomaali iyo English ah. Akhri <a href="'+editionHref(ctx,'/about')+'">siyaasadda tifaftirka</a>. Tani ma aha talo maaliyadeed — samee cilmi-baaristaada (DYOR).',
+    'Zaki News is independent crypto and market news in Somali and English. Read our <a href="'+editionHref(ctx,'/about')+'">editorial policy</a>. Not financial advice — DYOR.'
+  );
+  return '<footer class="footer site-footer">'+
+    '<div class="wrap"><div class="footer-main">'+
+      footerCol(ctx,'news',t(ctx,'Wararka','News'),news)+
+      footerCol(ctx,'tools',t(ctx,'Qalabka','Tools'),tools)+
+      footerCol(ctx,'learn',t(ctx,'Waxbarasho','Learn'),learn)+
+      footerCol(ctx,'about',t(ctx,'Nagu saabsan','About'),about)+
+      '<div class="footer-aside">'+
+        '<a class="footer-brand" href="'+editionHref(ctx,'/')+'">'+mark+'<span>Zaki <i>News</i></span></a>'+
+        footerSocials(ctx.profile)+
+        footerNewsletter(ctx)+
+      '</div></div></div>'+
+    '<div class="wrap footer-note"><p>'+independence+'</p></div>'+
+    '<div class="wrap footer-base">'+
+      '<p>© '+year+' Zaki News · by <a href="'+escape(ctx.profile.website||academy)+'" rel="noopener noreferrer" target="_blank">Zakariya Academy</a></p>'+
+      footerLangPills(ctx)+
+    '</div>'+
+    '<script>(function(){const q=matchMedia("(max-width:640px)");const sync=()=>document.querySelectorAll("footer.site-footer details.footer-col").forEach(d=>d.open=!q.matches);sync();q.addEventListener("change",sync);})();</script>'+
+  '</footer>';
+}
