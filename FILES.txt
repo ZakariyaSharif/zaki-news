@@ -111,11 +111,16 @@ worker/fx-snapshot.json
 worker/images/academy-mark.webp
 worker/images/anthropic-debut.webp
 worker/images/bitcoin.webp
+worker/images/btc-drop-24.webp
+worker/images/btc-etf-outflows-24.webp
 worker/images/btc-rebound-23.webp
 worker/images/btc-session.webp
+worker/images/bullpen-24.webp
 worker/images/coin-and-token.webp
+worker/images/doj-binance-24.webp
 worker/images/ecb-october-account.webp
 worker/images/etc-mining.webp
+worker/images/eth-1700-24.webp
 worker/images/eth-flows-nov24.webp
 worker/images/ethereum.webp
 worker/images/gold-session.webp
@@ -134,6 +139,7 @@ worker/images/options-spx.webp
 worker/images/options-spy.webp
 worker/images/regulation-capitol.webp
 worker/images/security.webp
+worker/images/sol-xrp-etf-24.webp
 worker/images/transaction-hash.webp
 worker/images/uk-retail.webp
 worker/images/zk-batch-proof.webp
