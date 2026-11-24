@@ -54,6 +54,11 @@ async function publisherSettings(ctx,req,db) {
   return studioPage(ctx,publisherNav+message(notice)+'<form method="post" action="/studio?panel=profile" class="form studio-editor"><h2>Xogta qoraaga iyo daabacaha</h2><p class="meta">Xogtan waxay ka muuqanaysaa bogagga qoraaga, xiriirka iyo asturnaanta.</p>'+detailFields+'<h2>Baraha bulshada</h2><div class="profile-fields">'+socialFields+'</div><button>Kaydi xogta</button></form>',{status});
 }
 async function inbox(ctx,req,db) {
+  if(ctx.url.searchParams.has('export')){
+    const rows=await dbAll(db,'SELECT * FROM contacts ORDER BY created_at DESC,id DESC');
+    const cell=s=>'"'+(/^[=+@\-]/.test(String(s??''))?"'":'')+String(s??'').replace(/"/g,'""')+'"';
+    return new Response('id,name,email,subject,body,created_at\r\n'+rows.map(r=>[cell(r.id),cell(r.name),cell(r.email),cell(r.subject),cell(r.body),cell(r.created_at)].join(',')).join('\r\n'),{headers:{'content-type':'text/csv; charset=utf-8','content-disposition':'attachment; filename="zaki-news-contacts.csv"','cache-control':'private, no-store'}});
+  }
   if(req.method==='POST'){
     const form=await req.formData();
     const id=Number(form.get('delete'));
@@ -63,7 +68,7 @@ async function inbox(ctx,req,db) {
   }
   const list=await dbAll(db,'SELECT * FROM contacts ORDER BY id DESC LIMIT 100');
   const messages=list.map(m=>'<details class="inbox-item"><summary>'+escape(m.subject)+' <span class="meta">· '+escape(m.name)+' · '+date(m.created_at)+'</span></summary><p class="meta">Jawaab: <a href="'+replyTo(m.email)+'">'+escape(m.email)+'</a></p><p class="inbox-body">'+escape(m.body)+'</p><form method="post" action="/studio?panel=inbox"><button class="secondary" name="delete" value="'+m.id+'">Tirtir farriinta</button></form></details>').join('');
-  return studioPage(ctx,publisherNav+'<h2>Farriimaha soo galay</h2>'+(messages||'<p>Weli farriimo ma jiraan.</p>'));
+  return studioPage(ctx,publisherNav+'<h2>Farriimaha soo galay</h2><a class="btn" href="/studio?panel=inbox&amp;export=1">Soo dejiso CSV</a>'+(messages||'<p>Weli farriimo ma jiraan.</p>'));
 }
 async function contact(ctx,req,db) {
   const p=ctx.profile;
@@ -71,7 +76,7 @@ async function contact(ctx,req,db) {
   let status=200;
   let values={};
   if(req.method==='POST'){
-    if(req.headers.get('origin')!==ctx.url.origin||!req.headers.get('content-type')?.startsWith('application/x-www-form-urlencoded')) return text('Codsiga lama aqbalin.',403);
+    if(!allowedFormOrigin(req,ctx)||!req.headers.get('content-type')?.startsWith('application/x-www-form-urlencoded')) return text('Codsiga lama aqbalin.',403);
     if(Number(req.headers.get('content-length'))>16000) return text('Farriintu way dheer tahay.',413);
     const form=await req.formData();
     if(form.get('website_confirm')) return redirect(editionHref(ctx,'/contact?sent=1'));

@@ -1,8 +1,9 @@
 import {resolveDatabase} from '../runtime/database.mjs';
+import {requestSiteOrigin} from '../runtime/origin.mjs';
 import {serve} from '../runtime/serve.mjs';
 export const config={api:{bodyParser:false}};
 export default function handler(req,res) {
-  const origin=process.env.SITE_ORIGIN || 'https://'+process.env.VERCEL_URL;
+  const origin=requestSiteOrigin(req,process.env);
   const route=new URL(req.url,origin);
   const path=route.searchParams.get('__zaki_path');
   if(path!==null){

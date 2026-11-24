@@ -58,7 +58,7 @@ function newsletter(ctx,compact=false){
 }
 async function subscribe(ctx,req,db){
   if(!enabled(ctx,'newsletter')) return text('Not found',404);
-  if(req.headers.get('origin')!==ctx.url.origin||!req.headers.get('content-type')?.startsWith('application/x-www-form-urlencoded')) return text('Request rejected',403);
+  if(!allowedFormOrigin(req,ctx)||!req.headers.get('content-type')?.startsWith('application/x-www-form-urlencoded')) return text('Request rejected',403);
   const form=await req.formData();
   ctx.lang=form.get('lang')==='en'?'en':'so';
   const email=String(form.get('email')||'').trim().toLowerCase();

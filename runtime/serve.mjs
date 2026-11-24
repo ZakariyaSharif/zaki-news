@@ -9,6 +9,8 @@ export async function serve(req,res,db,origin) {
     for (const [key,value] of Object.entries(req.headers)) {
       if (value && !key.startsWith('oai-') && !['host','authorization','transfer-encoding','content-length'].includes(key)) headers.set(key,String(value));
     }
+    if (!headers.get('x-forwarded-host') && req.headers.host) headers.set('x-forwarded-host', String(req.headers.host));
+
     if (['/admin','/studio'].includes(url.pathname)) {
       const email = process.env.NEWSROOM_OWNER_EMAIL;
       const password = process.env.NEWSROOM_ADMIN_PASSWORD;

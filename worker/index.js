@@ -20,6 +20,31 @@ const xml = body => new Response(body,{headers:{'content-type':'application/xml;
 const dbAll = async (db, sql, ...values) => (await db.prepare(sql).bind(...values).all()).results;
 const dbFirst = (db, sql, ...values) => db.prepare(sql).bind(...values).first();
 const dbRun = (db, sql, ...values) => db.prepare(sql).bind(...values).run();
+function requestHostName(req){
+  const raw=String(req.headers.get('x-forwarded-host')||req.headers.get('host')||'').split(',')[0].trim();
+  return raw.split(':')[0].toLowerCase();
+}
+function allowedFormOrigin(req,ctx){
+  const origin=req.headers.get('origin')||'';
+  let host='';
+  try{
+    const url=new URL(origin);
+    if(url.protocol!=='https:' && url.protocol!=='http:') return false;
+    if(url.username||url.password) return false;
+    host=url.hostname.toLowerCase();
+    if(url.protocol==='http:' && !['localhost','127.0.0.1'].includes(host)) return false;
+  }catch{return false;}
+  const allowed=new Set(['zaki-news-app.vercel.app','zaki-news.vercel.app']);
+  const requestHost=requestHostName(req);
+  if(requestHost) allowed.add(requestHost);
+  for(const value of [ctx?.url?.origin,ctx?.origin]){
+    try{ if(value) allowed.add(new URL(value).hostname.toLowerCase()); }catch{}
+  }
+  if(host==='localhost'||host==='127.0.0.1'){ allowed.add('localhost'); allowed.add('127.0.0.1'); }
+  if(allowed.has(host)) return true;
+  if(host==='news.zakariyaacademy.com'||host.endsWith('.news.zakariyaacademy.com')) return true;
+  return false;
+}
 const https = value => { try { const url = new URL(value); return url.protocol === 'https:' && !url.username && !url.password ? url.href : ''; } catch { return ''; } };
 const wordCount = a => Math.max(1,Math.ceil(a.body.trim().split(/\s+/).length/220));
 const storyImage = (a, attributes='loading="lazy"') => '<img src="'+escape(a.image)+'" alt="'+escape(a.image_alt)+'" '+attributes+'>';
@@ -108,7 +133,7 @@ async function studio(ctx,req,env) {
   if (Number(req.headers.get('content-length'))>300000) return text('Codsigu aad buu u dheer yahay.',413);
   const owner = (await dbFirst(db,"SELECT value FROM settings WHERE key='owner'"))?.value;
   if (!uid) return studioPage(ctx,'<p><a class="btn" href="/signin-with-chatgpt?returnTo=%2Fadmin" target="_top">Ku gal ChatGPT</a></p>');
-  if (req.method==='POST' && (req.headers.get('origin')!==ctx.url.origin || !req.headers.get('content-type')?.startsWith('application/x-www-form-urlencoded'))) return text('Codsiga lama aqbalin.',403);
+  if (req.method==='POST' && (!allowedFormOrigin(req,ctx) || !req.headers.get('content-type')?.startsWith('application/x-www-form-urlencoded'))) return text('Codsiga lama aqbalin.',403);
   const email = req.headers.get('oai-authenticated-user-email')?.trim().toLowerCase();
   const ownerEmail = env.NEWSROOM_OWNER_EMAIL?.trim().toLowerCase();
   if (owner !== uid && (!ownerEmail || email !== ownerEmail)) {
