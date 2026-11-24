@@ -880,3 +880,37 @@ a.ed-coin-link:hover .ed-row-affordance{opacity:1}
 @media(max-width:600px){
   .ed-cat-cards.is-n3 .ed-mini img,.ed-cat-cards.is-n3 .ed-mini-fallback{width:124px;height:86px}
 }
+
+/* Confirmation / thanks pages */
+.ed-thanks{max-width:920px;margin:4px auto 0}
+.ed-thanks-card{text-align:center;background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:clamp(28px,5vw,52px) clamp(20px,4vw,48px) clamp(28px,4vw,44px)}
+.ed-thanks-icon{display:block;margin:0 auto 18px}
+.ed-thanks-card h1{margin:0 0 12px;font-family:'Playfair Display',Georgia,serif;font-size:clamp(1.7rem,3.4vw,2.35rem);font-weight:800;letter-spacing:-.03em;line-height:1.15;color:var(--ink)}
+.ed-thanks-lead{margin:0 auto 24px;max-width:34rem;color:var(--dim);font-size:1.05rem;line-height:1.55}
+.ed-thanks-form{text-align:left;margin:0 auto 22px;max-width:28rem}
+.ed-thanks-form .newsletter{margin:0;background:var(--bg);border-radius:12px}
+.ed-thanks-form .newsletter form{flex-direction:column;align-items:stretch}
+.ed-thanks-form .newsletter label:first-of-type input{width:100%}
+.ed-thanks-form .newsletter .consent{align-self:flex-start}
+.ed-thanks-form .newsletter button{align-self:flex-start}
+.ed-thanks-home{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:.8rem 1.45rem;border-radius:10px;background:var(--orange);color:#fff;font-weight:800;letter-spacing:-.01em;text-decoration:none}
+.ed-thanks-home:hover{background:#d9441c;color:#fff}
+.ed-thanks-links{display:flex;flex-wrap:wrap;justify-content:center;gap:10px 22px;margin:22px 0 4px}
+.ed-thanks-links a{color:var(--ink);font-weight:700;text-decoration:none;border-bottom:1px solid var(--line);padding-bottom:2px}
+.ed-thanks-links a:hover{color:var(--orange);border-bottom-color:var(--orange)}
+.ed-thanks-socials{margin-top:20px;padding-top:18px;border-top:1px solid var(--line)}
+.ed-thanks-socials p{margin:0 0 12px;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+.ed-thanks-socials div{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+.ed-thanks-socials a{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:6px 12px 6px 10px;border:1px solid var(--line);border-radius:999px;background:var(--bg);color:var(--ink);text-decoration:none;font-size:13px;font-weight:650}
+.ed-thanks-socials a:hover{border-color:var(--orange);color:var(--orange)}
+.ed-thanks-socials img{width:18px;height:18px}
+:root[data-theme=dark] .ed-thanks-socials img{filter:invert(1)}
+.ed-thanks-stories{margin-top:40px}
+.ed-thanks-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+@media(max-width:700px){
+  .ed-thanks-grid{grid-template-columns:1fr}
+  .ed-thanks-grid .ed-mini{flex-direction:row;gap:14px;align-items:center}
+  .ed-thanks-grid .ed-mini img,.ed-thanks-grid .ed-mini-fallback{width:124px;height:86px;aspect-ratio:auto;flex:none;border-radius:10px}
+  .ed-thanks-grid .ed-mini-copy{padding:0}
+  .ed-thanks-grid .ed-mini-copy h3{font-size:1.02rem}
+}

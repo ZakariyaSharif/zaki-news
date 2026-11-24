@@ -72,7 +72,15 @@ async function inbox(ctx,req,db) {
 }
 async function contact(ctx,req,db) {
   const p=ctx.profile;
-  let notice=ctx.url.searchParams.has('sent')?'Farriinta waa la diray. Mahadsanid.':'';
+  if(req.method!=='POST' && ctx.url.searchParams.has('sent')){
+    return confirmationPage(ctx,{
+      state:'ok',
+      title:t(ctx,'Farriinta waa la diray','Message sent'),
+      body:t(ctx,'Mahadsanid. Waan akhriyi doonnaa farriintaada, waxaana kuu soo jawaabi doonnaa haddii loo baahdo.','Thank you. We’ll read your message and get back to you if a reply is needed.'),
+      stories:await confirmationStories(ctx,db)
+    },{noindex:true});
+  }
+  let notice='';
   let status=200;
   let values={};
   if(req.method==='POST'){

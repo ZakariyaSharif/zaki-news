@@ -62,9 +62,78 @@ async function subscribe(ctx,req,db){
   const form=await req.formData();
   ctx.lang=form.get('lang')==='en'?'en':'so';
   const email=String(form.get('email')||'').trim().toLowerCase();
-  if(email.length>254||!validEmail(email)||form.get('consent')!=='yes') return publisherPage(ctx,t(ctx,'Hubi xogtaada','Check your details'),newsletter(ctx),{status:400,noindex:true});
+  const stories=await confirmationStories(ctx,db);
+  if(email.length>254||!validEmail(email)||form.get('consent')!=='yes'){
+    return confirmationPage(ctx,{
+      state:'error',
+      title:t(ctx,'Hubi xogtaada','Check your details'),
+      body:t(ctx,'Fadlan gali iimayl sax ah oo oggolow inaad hesho warsidaha.','Please enter a valid email and confirm you want the newsletter.'),
+      extra:newsletter(ctx),
+      stories
+    },{status:400,noindex:true});
+  }
+  const existing=await dbFirst(db,'SELECT email FROM subscribers WHERE email=?',email);
   await dbRun(db,'INSERT OR IGNORE INTO subscribers (email,created_at) VALUES (?,?)',email,new Date().toISOString());
-  return publisherPage(ctx,t(ctx,'Waad isdiiwaangelisay','You’re subscribed'),'<p>'+t(ctx,'Waad ku mahadsan tahay isdiiwaangelinta.','Thank you for subscribing.')+'</p>',{noindex:true});
+  if(existing){
+    return confirmationPage(ctx,{
+      state:'already',
+      title:t(ctx,'Hore ayaad ugu biirtay warsidaha','You’re already subscribed'),
+      body:t(ctx,'Iimaylkaagu wuxuu hore ugu jiray liiska. Waxaad weli ku heli doontaa wararka crypto iyo suuqyada ee ugu dambeeyay sanduuqaaga iimaylka.','This email is already on the list. You’ll still receive the latest crypto and market news in your inbox.'),
+      stories
+    },{noindex:true});
+  }
+  return confirmationPage(ctx,{
+    state:'ok',
+    title:t(ctx,'Waad isdiiwaangelisay','You’re subscribed'),
+    body:t(ctx,'Waad ku mahadsan tahay isdiiwaangelinta. Waxaad ku heli doontaa wararka crypto iyo suuqyada ee ugu dambeeyay sanduuqaaga iimaylka.','Thank you for subscribing. You’ll receive the latest crypto and market news in your inbox.'),
+    stories
+  },{noindex:true});
+}
+async function confirmationStories(ctx,db){
+  const published=[...novemberMarketStories,...educationStories,...screeningStories,...await dbAll(db,'SELECT * FROM articles WHERE published_at IS NOT NULL')].sort((a,b)=>b.published_at.localeCompare(a.published_at)||a.slug.localeCompare(b.slug));
+  const list=[...published,...samples,...englishSamples].filter(a=>(a.language||'so')===ctx.lang);
+  const live=list.filter(a=>!a.sample && a.published_at);
+  return (live.length>=3?live:list).slice(0,3);
+}
+function confirmationIcon(state){
+  if(state==='error') return '<svg class="ed-thanks-icon" viewBox="0 0 64 64" width="64" height="64" aria-hidden="true"><circle cx="32" cy="32" r="31" fill="none" stroke="var(--orange)" stroke-width="2.5"/><path d="M32 18v20" fill="none" stroke="var(--orange)" stroke-width="4.5" stroke-linecap="round"/><circle cx="32" cy="46" r="2.6" fill="var(--orange)"/></svg>';
+  if(state==='already') return '<svg class="ed-thanks-icon" viewBox="0 0 64 64" width="64" height="64" aria-hidden="true"><circle cx="32" cy="32" r="31" fill="none" stroke="var(--orange)" stroke-width="2.5"/><path d="M19 33.5l9 9 18-19" fill="none" stroke="var(--orange)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  return '<svg class="ed-thanks-icon" viewBox="0 0 64 64" width="64" height="64" aria-hidden="true"><circle cx="32" cy="32" r="32" fill="var(--orange)"/><path d="M19 33.5l9 9 18-19" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+}
+function confirmationSocials(ctx){
+  const profile=ctx.profile||{};
+  const links=['x','youtube','instagram','facebook'].filter(key=>profile[key]).map(key=>{
+    const label=socialLabels[key]||key;
+    const icon=socialAssets[key]?'<img src="/social-logo/'+key+'.svg" width="18" height="18" alt="">':'';
+    return '<a href="'+escape(profile[key])+'" rel="noopener noreferrer" target="_blank">'+icon+'<span>'+escape(label)+'</span></a>';
+  }).join('');
+  if(!links) return '';
+  return '<nav class="ed-thanks-socials" aria-label="'+t(ctx,'Naga raac','Follow us')+'"><p>'+t(ctx,'Naga raac','Follow us')+'</p><div>'+links+'</div></nav>';
+}
+function confirmationPage(ctx,view,opts={}){
+  const stories=view.stories||[];
+  const storyBlock=stories.length
+    ? '<section class="ed-thanks-stories">'+
+        '<div class="ed-section-head"><h2>'+t(ctx,'Wararkii u dambeeyay','Latest news')+'</h2><a href="'+editionHref(ctx,'/latest')+'">'+t(ctx,'Dhammaan','See all')+'</a></div>'+
+        '<div class="ed-thanks-grid">'+stories.map(a=>homeMiniCard(ctx,a,stories)).join('')+'</div>'+
+      '</section>'
+    : '';
+  const body='<div class="ed-thanks">'+
+    '<section class="ed-thanks-card is-'+(view.state||'ok')+'">'+
+      confirmationIcon(view.state)+
+      '<h1>'+escape(view.title)+'</h1>'+
+      '<p class="ed-thanks-lead">'+escape(view.body)+'</p>'+
+      (view.extra?'<div class="ed-thanks-form">'+view.extra+'</div>':'')+
+      '<a class="ed-thanks-home" href="'+editionHref(ctx,'/')+'">'+t(ctx,'Ku noqo bogga hore','Back to the homepage')+'</a>'+
+      '<nav class="ed-thanks-links">'+
+        '<a href="'+editionHref(ctx,'/latest')+'">'+t(ctx,'Wararkii u dambeeyay','Latest news')+'</a>'+
+        '<a href="'+editionHref(ctx,'/topic/education')+'">'+t(ctx,'Hagayaasha','Guides')+'</a>'+
+      '</nav>'+
+      confirmationSocials(ctx)+
+    '</section>'+
+    storyBlock+
+  '</div>';
+  return layout(ctx,view.title,body,{...opts,noindex:true});
 }
 const editionAdminNav='<nav class="publisher-nav"><a href="/admin?panel=subscribers">Isdiiwaangeliyeyaasha</a><a href="/admin?panel=sections">Qaybaha bogga</a><a href="/admin?panel=calendar">Jadwalka iyo unlocks</a></nav>';
 async function editionAdmin(ctx,req,db,panel){
