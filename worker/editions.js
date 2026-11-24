@@ -245,3 +245,199 @@ function siteFooter(ctx){
     '<script>(function(){const q=matchMedia("(max-width:640px)");const sync=()=>document.querySelectorAll("footer.site-footer details.footer-col").forEach(d=>d.open=!q.matches);sync();q.addEventListener("change",sync);})();</script>'+
   '</footer>';
 }
+
+
+const edToolMeta={
+  '/charts':[['Jaantusyada','Charts'],['Jaantusyo qiime oo interaktif ah','Interactive price charts'],'<polyline points="3 17 9 11 13 15 21 7"/><polyline points="16 7 21 7 21 12"/>'],
+  '/etf-flows':[['Qulqulka ETF-yada crypto','Crypto ETF flows'],['Qulqulka lacagta ETF-yada crypto','Daily crypto ETF inflows and outflows'],'<path d="M4 17h4v3H4zM10 11h4v9h-4zM16 7h4v13h-4z"/>'],
+  '/crypto-bubbles':[['Goobooyinka crypto','Crypto bubbles'],['Khariidad dhaqdhaqaaqa lacagaha','Visual map of moving coins'],'<circle cx="8" cy="14" r="4"/><circle cx="16" cy="9" r="3.2"/><circle cx="18" cy="17" r="2.2"/>'],
+  '/smart-money':[['Smart Money','Smart Money'],['Dhaqdhaqaaqa lacagta Ethereum','Ethereum smart-money flows'],'<rect x="3" y="7" width="18" height="12" rx="2"/><path d="M3 11h18"/>'],
+  '/profit-calculator':[['Xisaabiyaha faa’iidada','Profit calculator'],['Xisaabi faa’iidada iibka','Work out a trade’s return'],'<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h4"/>'],
+  '/unlocks':[['Furitaanka tokennada','Token unlocks'],['Furitaanka tokennada soo socda','Upcoming token unlocks'],'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>'],
+  '/liquidations':[['Likwideeynta','Liquidations'],['Khariidadda likwideynta','Exchange liquidation map'],'<path d="M12 3v10"/><path d="M8 9l4 4 4-4"/><path d="M5 21h14"/>'],
+  '/fear-greed':[['Cabsi iyo Hunguri','Fear &amp; Greed'],['Tusaha cabsi iyo hunguri','Market sentiment index'],'<circle cx="12" cy="12" r="8"/><path d="M8 14c1.2 1.6 2.6 2.3 4 2.3s2.8-.7 4-2.3"/>'],
+  '/calendar':[['Jadwalka dhaqaalaha','Economic calendar'],['Jadwalka warbixinnada dhaqaalaha','Economic release calendar'],'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/>'],
+  '/halving':[['Bitcoin halving','Bitcoin halving'],['Jadwalka soo saarista Bitcoin','Bitcoin issuance schedule'],'<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/>'],
+  '/highlights':[['Muuqaalka suuqa','Crypto highlights'],['Lammaanaha ugu dhaqsaha badan','Fast-moving crypto pairs'],'<polygon points="12 3 14.5 9 21 9.5 16 14 17.5 21 12 17.5 6.5 21 8 14 3 9.5 9.5 9"/>'],
+  '/commodities':[['Badeecadaha','Commodities'],['Sabuuradda badeecadaha','Commodity price board'],'<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/>']
+};
+const edFeaturedTools=['/charts','/etf-flows','/crypto-bubbles','/smart-money','/profit-calculator','/unlocks','/liquidations','/fear-greed','/calendar','/halving','/highlights','/commodities'];
+function edIcon(d){
+  return '<span class="ed-tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+d+'</svg></span>';
+}
+function edActive(ctx, path){
+  const here=ctx.url.pathname.replace(/\/$/,'')||'/';
+  return path==='/'?here==='/':here===path;
+}
+function edA(ctx, path, label){
+  const on=edActive(ctx,path);
+  return '<a href="'+editionHref(ctx,path)+'"'+(on?' class="is-active" aria-current="page"':'')+'>'+label+'</a>';
+}
+function edLangPills(ctx){
+  const label=t(ctx,'Dooro luqadda','Choose language');
+  const item=lang=>'<a lang="'+lang+'" hreflang="'+lang+'" href="'+escape(footerLangHref(ctx,lang))+'"'+(lang===ctx.lang?' aria-current="true"':'')+'>'+lang.toUpperCase()+'</a>';
+  return '<nav class="ed-langs" aria-label="'+label+'">'+item('so')+item('en')+'</nav>';
+}
+function edSpark(values){
+  const nums=(values||[]).filter(Number.isFinite);
+  if(nums.length<2) return '<div class="ed-spark-empty"></div>';
+  const w=320,h=140,p=8;
+  const min=Math.min(...nums),max=Math.max(...nums);
+  const xs=nums.map((_,i)=>p+i*(w-2*p)/Math.max(nums.length-1,1));
+  const ys=nums.map(v=>p+(h-2*p)*(1-(v-min)/(max-min||1)));
+  const line=xs.map((x,i)=>x.toFixed(1)+','+ys[i].toFixed(1)).join(' ');
+  const last=nums.length-1;
+  const d='M '+xs[0].toFixed(1)+' '+ys[0].toFixed(1)+' L '+xs.slice(1).map((x,i)=>x.toFixed(1)+' '+ys[i+1].toFixed(1)).join(' ')+' L '+xs[last].toFixed(1)+' '+(h-p)+' L '+xs[0].toFixed(1)+' '+(h-p)+' Z';
+  return '<svg class="ed-spark" viewBox="0 0 '+w+' '+h+'" data-points="'+escape(JSON.stringify(nums))+'" preserveAspectRatio="none" role="img">'+
+    '<path class="ed-spark-fill" d="'+d+'"></path>'+
+    '<polyline class="ed-spark-line" points="'+line+'" fill="none"></polyline>'+
+    '<circle class="ed-spark-dot" cx="'+xs[last].toFixed(1)+'" cy="'+ys[last].toFixed(1)+'" r="3.5"></circle>'+
+    '<circle class="ed-spark-hover" cx="'+xs[last].toFixed(1)+'" cy="'+ys[last].toFixed(1)+'" r="4.5" style="opacity:0"></circle>'+
+  '</svg><div class="ed-tip" hidden></div>';
+}
+function edMoney(n){
+  if(!Number.isFinite(n)) return '—';
+  return new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:n<1?4:2}).format(n);
+}
+function todayMarket(ctx, snapshot){
+  const pane=(key,label,icon)=>{
+    const row=snapshot?.[key];
+    const change=Number.isFinite(row?.change)?row.change:null;
+    const dir=change==null?'':(change>=0?'up':'down');
+    const pct=change==null?'—':((change>=0?'+':'')+change.toFixed(2)+'%');
+    return '<div class="ed-market-pane" data-panel="'+key+'"'+(key==='eth'?' hidden':'')+'>'+
+      '<div class="ed-market-quote">'+
+        '<span class="ed-coin">'+icon+'<strong>'+label+'</strong></span>'+
+        '<span class="ed-last">'+edMoney(row?.price)+'</span>'+
+        '<span class="ed-chg" data-direction="'+dir+'">'+pct+'</span>'+
+      '</div>'+
+      '<div class="ed-spark-wrap">'+edSpark(row?.spark)+'</div>'+
+    '</div>';
+  };
+  return '<aside class="ed-market" data-ed-market>'+
+    '<div class="ed-market-head">'+
+      '<h2>'+t(ctx,'Suuqa maanta','Today’s market')+'</h2>'+
+      '<div class="ed-coin-toggle" role="tablist" aria-label="BTC ETH">'+
+        '<button type="button" data-coin="btc" aria-selected="true">BTC</button>'+
+        '<button type="button" data-coin="eth" aria-selected="false">ETH</button>'+
+      '</div>'+
+    '</div>'+
+    pane('btc','Bitcoin',coinIcon('btc'))+
+    pane('eth','Ethereum',coinIcon('eth'))+
+  '</aside>';
+}
+function editorialHeader(ctx){
+  const primary=[
+    ['/',t(ctx,'Bogga hore','Home')],
+    ['/latest',t(ctx,'Wararkii u dambeeyay','Latest')],
+    [catUrl('Crypto'),'Crypto'],
+    ['/markets',t(ctx,'Suuqyada','Markets')],
+    [catUrl('Forex'),'Forex'],
+    ['/etfs',t(ctx,'ETF-yada','ETFs')],
+    [catUrl('Economy'),t(ctx,'Dhaqaalaha','Economy')]
+  ];
+  const topics=[
+    [catUrl('Stocks'),categoryName(ctx,'Stocks')],
+    [catUrl('Forex'),'Forex'],
+    [catUrl('Economy'),categoryName(ctx,'Economy')],
+    [catUrl('Central Banks'),categoryName(ctx,'Central Banks')],
+    [catUrl('Tech'),categoryName(ctx,'Tech')],
+    [catUrl('Politics'),categoryName(ctx,'Politics')],
+    ['/sharia',t(ctx,...shariaTitles)],
+    ['/resources',t(ctx,'Xiriiriyeyaasha','Resources')],
+    ['/about',t(ctx,'Nagu saabsan','About')]
+  ];
+  const bubbleUrl='https://zakibubble.zakariyaacademy.com';
+  const tools=edFeaturedTools.map(path=>{
+    const [title,blurb,d]=edToolMeta[path];
+    const href=path==='/crypto-bubbles'?bubbleUrl:editionHref(ctx,path);
+    const ext=path==='/crypto-bubbles'?' rel="noopener noreferrer" target="_blank"':'';
+    return '<a class="ed-tool" href="'+escape(href)+'"'+ext+'>'+edIcon(d)+'<span><strong>'+t(ctx,...title)+'</strong><small>'+t(ctx,...blurb)+'</small></span></a>';
+  }).join('');
+  const follow=[
+    (ctx.profile.website||academy)?'<a href="'+escape(ctx.profile.website||academy)+'" rel="noopener noreferrer" target="_blank">Zakariya Academy ↗</a>':'',
+    ctx.profile.youtube?'<a href="'+escape(ctx.profile.youtube)+'" rel="noopener noreferrer" target="_blank">YouTube ↗</a>':''
+  ].filter(Boolean).join('');
+  const kicker=t(ctx,'Warbaahinta maaliyadeedka Soomaaliyeed','Somali financial journalism');
+  const ribbon=t(ctx,'so','en')==='en'
+    ? ['Today’s market prices','Analysis, data and insight','Somali financial news','Independent · Somali and English']
+    : ['Qiimaha suuqyada maanta','Falanqayn, xog iyo aragtiyo','Wararka maaliyadda Soomaaliyeed','Madax-bannaan · Af-Soomaali iyo English'];
+  const ribbonHtml=('<span>'+ribbon.join(' <i>•</i> ')+' <i>•</i> <span data-ed-ribbon-price></span></span>').repeat(2);
+  const searchIcon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>';
+  const chevron='<svg class="ed-chevron" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M2 4l4 4 4-4"/></svg>';
+  const searchForm='<form class="ed-search" role="search" action="/search">'+
+    (ctx.lang==='en'?'<input type="hidden" name="lang" value="en">':'')+
+    '<input type="search" name="q" maxlength="100" placeholder="'+t(ctx,'Raadi maqaallo','Search articles')+'" aria-label="'+t(ctx,'Raadi maqaallo','Search articles')+'">'+
+    '<button type="submit">'+t(ctx,'Raadi','Search')+'</button></form>';
+  const mega='<div class="ed-mega" id="ed-mega" hidden>'+
+    '<div class="ed-mega-topics"><h2>'+t(ctx,'Mawduucyada','Topics')+'</h2><nav>'+topics.map(([p,l])=>edA(ctx,p,l)).join('')+'</nav></div>'+
+    '<div class="ed-mega-tools"><h2>'+t(ctx,'Qalabka','Tools')+'</h2><div class="ed-tool-grid">'+tools+'</div></div>'+
+    (follow?'<div class="ed-mega-follow">'+follow+'</div>':'')+
+  '</div>';
+  const sheet='<div class="ed-sheet" id="ed-sheet" hidden role="dialog" aria-modal="true" aria-label="'+t(ctx,'Liiska','Menu')+'">'+
+    '<div class="ed-sheet-head"><strong>Zaki <i>News</i></strong><div class="ed-sheet-actions">'+edLangPills(ctx)+
+    '<button type="button" class="ed-icon-btn" data-theme-toggle aria-label="'+t(ctx,'Beddel muuqaalka','Toggle theme')+'">◐</button>'+
+    '<button type="button" class="ed-icon-btn" data-ed="close-sheet" aria-label="'+t(ctx,'Xir','Close')+'">'+
+    '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div></div>'+
+    '<nav class="ed-sheet-nav">'+primary.map(([p,l])=>edA(ctx,p,l)).join('')+'</nav>'+
+    '<div class="ed-sheet-block"><h2>'+t(ctx,'Mawduucyada','Topics')+'</h2><nav>'+topics.map(([p,l])=>edA(ctx,p,l)).join('')+'</nav></div>'+
+    '<div class="ed-sheet-block"><h2>'+t(ctx,'Qalabka','Tools')+'</h2><div class="ed-tool-grid">'+tools+'</div></div>'+
+    (follow?'<div class="ed-mega-follow">'+follow+'</div>':'')+
+  '</div>';
+  return '<header class="standard-header ed-header" data-ed-header>'+
+    '<div class="wrap ed-top">'+
+      '<a class="ed-logo" href="'+editionHref(ctx,'/')+'">'+mark+'<span>Zaki News</span></a>'+
+      '<span class="ed-rule" aria-hidden="true"></span>'+
+      '<span class="ed-kicker">'+kicker+'</span>'+
+      '<div class="ed-actions">'+
+        '<button type="button" class="ed-icon-btn ed-wide" data-ed="search" aria-expanded="false" aria-label="'+t(ctx,'Raadi','Search')+'">'+searchIcon+'</button>'+
+        '<button type="button" class="ed-icon-btn ed-desk" data-theme-toggle aria-label="'+t(ctx,'Beddel muuqaalka','Toggle theme')+'">◐</button>'+
+        edLangPills(ctx)+
+        '<button type="button" class="ed-icon-btn ed-menu" data-ed="menu" aria-expanded="false" aria-controls="ed-sheet" aria-label="'+t(ctx,'Fur liiska','Open menu')+'">'+
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>'+
+        '</button>'+
+      '</div>'+searchForm+
+    '</div>'+
+    '<div class="ed-ribbon" aria-hidden="true"><div class="ed-ribbon-track">'+ribbonHtml+'</div></div>'+
+    '<nav class="wrap ed-nav" aria-label="'+t(ctx,'Qaybaha','Sections')+'">'+
+      primary.map(([p,l])=>edA(ctx,p,l)).join('')+
+      '<button type="button" class="ed-more" data-ed="more" aria-expanded="false" aria-controls="ed-mega">'+t(ctx,'Dheeraad','More')+' '+chevron+'</button>'+
+    '</nav>'+mega+
+    '<div class="ed-mob-ticker" data-ed-ticker>'+
+      '<a data-symbol="btc" href="'+editionHref(ctx,'/charts?coin=btc')+'"><strong>BTC</strong> <span data-price>—</span> <span data-change></span></a>'+
+      '<a data-symbol="eth" href="'+editionHref(ctx,'/charts?coin=eth')+'"><strong>ETH</strong> <span data-price>—</span> <span data-change></span></a>'+
+    '</div>'+
+  '</header>'+sheet;
+}
+function editorialHome(ctx, list, snapshot){
+  const lead=list[0];
+  if(!lead) return '<p>'+t(ctx,'Wax maqaal ah lama helin.','No articles found.')+'</p>';
+  const rest=list.slice(1,7);
+  const clock='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 8v5l3 2"/></svg>';
+  const markIcon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4h10v16l-5-3-5 3z"/></svg>';
+  const minutes=t(ctx, wordCount(lead)+' daqiiqo', wordCount(lead)==1?'1 minute':wordCount(lead)+' minutes');
+  const cat=lead.sample?t(ctx,'Falanqayn','Analysis'):categoryName(ctx,lead.category);
+  const items=rest.map(a=>{
+    const when=a.sample?'':date(a.published_at,ctx.lang);
+    const mins=t(ctx, wordCount(a)+' daqiiqo', wordCount(a)==1?'1 min':wordCount(a)+' min');
+    return '<li><a href="'+storyUrl(a)+'"><h3>'+escape(a.title)+'</h3><span class="ed-item-meta">'+clock+' '+mins+(when?' <i>·</i> '+when:'')+'</span></a></li>';
+  }).join('');
+  return '<div class="ed-home">'+
+    '<section class="ed-hero">'+
+      '<div class="ed-hero-copy">'+
+        '<a class="ed-cat" href="'+editionHref(ctx,catUrl(canonicalCategory(lead.category)))+'"><i></i> '+escape(cat)+'</a>'+
+        '<h1><a href="'+storyUrl(lead)+'">'+escape(lead.title)+'</a></h1>'+
+        '<p class="ed-dek">'+escape(lead.summary)+'</p>'+
+        '<div class="ed-byline">'+clock+'<span>'+minutes+'</span><span class="ed-byline-rule"></span>'+markIcon+
+      '</div></div>'+
+      '<a class="ed-hero-media" href="'+storyUrl(lead)+'">'+storyImage(lead,'fetchpriority="high"')+'</a>'+
+    '</section>'+
+    '<section class="ed-split">'+
+      '<div class="ed-latest">'+
+        '<div class="ed-section-head"><h2>'+t(ctx,'Wararkii u dambeeyay','Latest')+'</h2><a href="'+editionHref(ctx,'/latest')+'">'+t(ctx,'Dhammaan','See all')+'</a></div>'+
+        '<ul class="ed-story-list">'+items+'</ul>'+
+      '</div>'+
+      todayMarket(ctx, snapshot)+
+    '</section>'+
+  '</div>';
+}

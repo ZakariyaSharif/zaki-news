@@ -13,6 +13,7 @@ assets+='const coinAssets='+json.dumps({p.name:base64.b64encode(p.read_bytes()).
 assets+='const studioScript='+json.dumps((w/'studio-preview.js').read_text())+';\n'
 assets+='const etfClient='+json.dumps((w/'etf-client.js').read_text())+';\n'
 assets+='const marketScript='+json.dumps((w/'market-client.js').read_text())+';\n'
+assets+='const editorialScript='+json.dumps((w/'editorial-client.js').read_text())+';\n'
 assets+='const socialAssets='+json.dumps({p.stem:base64.b64encode(p.read_bytes()).decode() for p in (w/'social').glob('*.svg')})+';\n'
 liquidation_logos={p.stem.upper():'/coin-logo/'+p.name for p in sorted((w/'coins').glob('*'),key=lambda p:p.suffix) if p.suffix in ('.svg','.png')}
 assets+='const terminalScript='+json.dumps('const liquidationLogos='+json.dumps(liquidation_logos)+';\n'+(w/'terminal-client.js').read_text()+'\n'+(w/'scenario-client.js').read_text())+';\n'

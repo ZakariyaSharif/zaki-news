@@ -78,6 +78,42 @@ async function bitcoinOverviewCoin(){
   }
   return lastBitcoinOverview||btcReference;
 }
+async function marketSnapshot(){
+  const pack=(id,row,source)=>({
+    price:Number(row?.current_price??row?.price),
+    change:Number(row?.price_change_percentage_24h??row?.price_change_percentage_24h_in_currency??row?.change),
+    spark:(row?.sparkline_in_7d?.price||row?.spark||[]).filter(Number.isFinite),
+    source
+  });
+  try{
+    const rows=await remote('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=bitcoin,ethereum&sparkline=true&price_change_percentage=24h');
+    const btc=rows.find(c=>c.id==='bitcoin');
+    const eth=rows.find(c=>c.id==='ethereum');
+    if(btc?.current_price>0 && Array.isArray(btc.sparkline_in_7d?.price)){
+      return {btc:pack('btc',btc,'CoinGecko'),eth:eth?.current_price>0?pack('eth',eth,'CoinGecko'):null};
+    }
+  }catch{}
+  const out={btc:null,eth:null};
+  try{
+    const coin=await bitcoinOverviewCoin();
+    if(coin?.current_price>0) out.btc=pack('btc',coin,coin.quoteSource||'CoinGecko');
+  }catch{}
+  const fill=async symbol=>{
+    const stats=await remote('https://api.exchange.coinbase.com/products/'+symbol+'-USD/stats');
+    const last=Number(stats.last),open=Number(stats.open);
+    if(!(last>0)) return null;
+    let spark=[];
+    try{
+      const candles=await remote('https://api.exchange.coinbase.com/products/'+symbol+'-USD/candles?granularity=3600');
+      if(Array.isArray(candles)) spark=candles.slice().sort((a,b)=>a[0]-b[0]).map(r=>Number(r[4])).filter(Number.isFinite);
+    }catch{}
+    return {price:last,change:(open>0?(last/open-1)*100:null),spark,source:'Coinbase'};
+  };
+  try{ if(!out.eth) out.eth=await fill('ETH'); }catch{}
+  try{ if(!out.btc) out.btc=await fill('BTC'); }catch{}
+  return out;
+}
+
 function bitcoinPanel(ctx,coin){
   const price=Number(coin.current_price),num=new Intl.NumberFormat(ctx.lang,{notation:'compact',maximumFractionDigits:2});
   const digits=x=>Number.isFinite(x)?num.format(x):'—';

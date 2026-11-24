@@ -14,7 +14,7 @@ function element(tag,value){
   return node;
 }
 try {
-  document.documentElement.dataset.theme=localStorage.getItem('zaki-theme') || (matchMedia('(prefers-color-scheme: light)').matches?'light':'dark');
+  document.documentElement.dataset.theme=localStorage.getItem('zaki-theme') || 'light';
 } catch {}
 document.querySelectorAll('[data-theme-toggle]').forEach(button=>button.addEventListener('click',()=>{
   const theme=document.documentElement.dataset.theme==='light'?'dark':'light';
