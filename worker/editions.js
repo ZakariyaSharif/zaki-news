@@ -306,6 +306,7 @@ function siteFooter(ctx){
   const toolDefs=[
     ['/charts',['Jaantusyada','Charts']],
     ['/etf-flows',['Qulqulka ETF-yada crypto','Crypto ETF flows']],
+    ['/etf-watchlist',['Liiska ETF','ETF watchlist']],
     ['/smart-money',['Smart Money','Smart Money']],
     ['/liquidations',['Likwideeynta','Liquidations']],
     ['/unlocks',['Furitaanka tokennada','Token unlocks']],
@@ -372,14 +373,15 @@ const edToolMeta={
   '/calendar':[['Jadwalka dhaqaalaha','Economic calendar'],['Jadwalka warbixinnada dhaqaalaha','Economic release calendar'],'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/>'],
   '/halving':[['Bitcoin halving','Bitcoin halving'],['Jadwalka soo saarista Bitcoin','Bitcoin issuance schedule'],'<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/>'],
   '/highlights':[['Muuqaalka suuqa','Crypto highlights'],['Lammaanaha ugu dhaqsaha badan','Fast-moving crypto pairs'],'<polygon points="12 3 14.5 9 21 9.5 16 14 17.5 21 12 17.5 6.5 21 8 14 3 9.5 9.5 9"/>'],
-  '/commodities':[['Badeecadaha','Commodities'],['Sabuuradda badeecadaha','Commodity price board'],'<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/>']
+  '/commodities':[['Badeecadaha','Commodities'],['Sabuuradda badeecadaha','Commodity price board'],'<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/>'],
+  '/etf-watchlist':[['Liiska ETF','ETF watchlist'],['Liiska ETF-yada suuqa guud iyo spot crypto','Broad-market and spot crypto ETF quotes'],'<path d="M4 6h16M4 12h16M4 18h10"/>']
 };
 const edFeaturedTools=['/charts','/etf-flows','/crypto-bubbles','/smart-money','/profit-calculator','/unlocks','/liquidations','/fear-greed','/calendar','/halving','/highlights','/commodities'];
 function edIcon(d){
   return '<span class="ed-tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+d+'</svg></span>';
 }
 const edToolGroups=[
-  ['explore',['Sahami suuqyada','Explore markets'],['/charts','/crypto-bubbles','/highlights','/commodities']],
+  ['explore',['Sahami suuqyada','Explore markets'],['/charts','/crypto-bubbles','/highlights','/commodities','/etf-watchlist']],
   ['activity',['La soco dhaqdhaqaaqa','Track activity'],['/smart-money','/liquidations','/fear-greed']],
   ['plan',['Horay u qorshee','Plan ahead'],['/profit-calculator','/unlocks','/calendar','/halving']]
 ];
@@ -879,6 +881,7 @@ function suggestPageCatalog(ctx){
   add('/sharia',shariaTitles[0],shariaTitles[1]);
   add('/smart-money','Smart Money','Smart Money');
   add('/etf-flows','ETF-yada','ETFs');
+  add('/etf-watchlist','Liiska ETF','ETF watchlist');
   add('/ipo-calendar','Jadwalka IPO','IPO calendar');
   add('/earnings-calendar','Jadwalka natiijooyinka','Earnings calendar');
   add('/about','Nagu saabsan','About');

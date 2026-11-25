@@ -240,8 +240,7 @@ const resourceGroups = [
       [
         "Hoopay Wallet",
         "https://hoopaywallet.com/register?ref=iwAD0jOo",
-        "/brand-logo/hoopay.png",
-        ["Boorso dollar ah iyo abka lacag-bixinta, oo lagu shubo lacagta moobaylka laguna wareejiyo USDT/USDC.","A dollar wallet and payments app with mobile-money top-ups and USDT/USDC transfers."]
+        "/brand-logo/hoopay.png"
       ],
       [
         "Ledger Nano X",
@@ -266,7 +265,7 @@ const resourceGroups = [
       [
         "NordVPN",
         "https://go.nordvpn.net/aff_c?offer_id=15&aff_id=124732&url_id=902",
-        "https://ugc.production.linktr.ee/8e433494-55c4-407b-92b2-561c8fc68a33_main.png"
+        "/brand-logo/nordvpn.png"
       ],
       [
         "Brave",
