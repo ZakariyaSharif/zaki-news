@@ -297,6 +297,26 @@ for(const [path,expected] of [
  assert.ok(markup.toLowerCase().includes((path.includes('asset=bonds')?'Bonds':expected).toLowerCase()),path);
 }
 console.log('Bilingual market routes, calendar controls, education and footer brands passed.');
+const toolsSo=await (await get('/tools')).text();
+assert.match(toolsSo,/Qalabka suuqa/);
+assert.match(toolsSo,/Crypto bubble/);
+assert.match(toolsSo,/Sahami suuqyada/);
+assert.match(toolsSo,/La soco dhaqdhaqaaqa/);
+assert.match(toolsSo,/Horay u qorshee/);
+assert.match(toolsSo,/Raadi qalab/);
+assert.doesNotMatch(toolsSo,/Goobooyinka crypto/);
+const toolsEn=await (await get('/tools?lang=en')).text();
+assert.match(toolsEn,/Market tools/);
+assert.match(toolsEn,/Find a tool/);
+assert.match(toolsEn,/Explore markets/);
+assert.match(toolsEn,/Track activity/);
+assert.match(toolsEn,/Plan ahead/);
+assert.match(toolsEn,/Crypto bubbles/);
+assert.match(toolsEn,/Track daily fund inflows and outflows/);
+assert.match(await (await get('/crypto-bubbles')).text(),/Crypto bubble/);
+assert.match(await (await get('/')).text(),/Crypto bubble/);
+assert.match(await (await get('/sitemap.xml')).text(),/\/tools</);
+console.log('Market tools board, Crypto bubble label, and tools route passed.');
 for(const lang of ['so','en']){
  const page=await(await get('/etf-flows?asset=HYPE&lang='+lang)).text();
  for(const file of ['btc.svg','eth.svg','sol.svg','hype.png','zec.svg'])assert.ok(page.includes('/coin-logo/'+file),file);

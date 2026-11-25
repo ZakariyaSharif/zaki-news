@@ -451,4 +451,35 @@
   document.addEventListener('scroll',relayout,true);
 
 
+
+  document.querySelectorAll('[data-tools-board]').forEach(root=>{
+    const input=root.querySelector('[data-tool-query]');
+    if(!input) return;
+    const items=[...root.querySelectorAll('[data-tool-item]')];
+    const groups=[...root.querySelectorAll('[data-tool-group]')];
+    const hero=root.querySelector('[data-tool-hero]');
+    const empty=root.querySelector('[data-tool-empty]');
+    const apply=()=>{
+      const q=input.value.trim().toLowerCase();
+      let visible=0;
+      items.forEach(el=>{
+        const ok=!q||(el.getAttribute('data-tool-hay')||'').includes(q);
+        el.hidden=!ok;
+        if(ok) visible++;
+      });
+      if(hero){
+        const ok=!q||(hero.getAttribute('data-tool-hay')||'').includes(q);
+        hero.hidden=!ok;
+        if(ok) visible++;
+      }
+      groups.forEach(g=>{
+        const any=[...g.querySelectorAll('[data-tool-item]')].some(el=>!el.hidden);
+        g.hidden=!any;
+        if(any&&q) g.setAttribute('open','');
+      });
+      if(empty) empty.hidden=visible>0;
+    };
+    input.addEventListener('input',apply);
+  });
+
 })();

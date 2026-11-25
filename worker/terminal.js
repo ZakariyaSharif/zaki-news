@@ -1,6 +1,6 @@
 const terminalLinks=[
   ['Wararka','Terminal',[['/','Wararka','News','news'],['/calendar','Jadwalka dhaqaalaha','Economic calendar','calendar'],['/ipo-calendar','Jadwalka IPO','IPO calendar','calendar'],['/earnings-calendar','Jadwalka natiijooyinka','Earnings calendar','calendar'],['/topic/education','Waxbarasho','Education','news'],['/videos','Muuqaallada','Videos','news'],['/resources','Xiriiriyeyaasha','Resource links','news']]],
-  ['Xogta','Data',[['/markets','Suuqyada','Markets','markets'],['/smart-money','Smart Money','Smart Money','markets'],['/highlights','Muuqaalka suuqa','Crypto highlights','charts'],['/topic/stocks','Saamiyada','Stocks','stocks'],['/topic/forex','Forex','Forex','forex'],['/commodities','Badeecooyin','Commodities','markets'],['/etfs','ETF-yada','ETFs','stocks'],['/etf-flows','Dhaqdhaqaaqa ETF-yada','Crypto ETF flows','forex'],['/crypto-bubbles','Goobooyinka crypto','Crypto bubbles','markets'],['/profit-calculator','Xisaabiyaha faa’iidada','Profit calculator','calculator'],['/fear-greed','Cabsi iyo Damac','Fear &amp; Greed','sentiment'],['/charts','Jaantusyada','Charts','charts'],['/liquidations','Liquidations','Liquidations','liquidations'],['/unlocks','Furitaanka tokennada','Token unlocks','unlocks'],['/sharia',...shariaTitles,'screening']]],
+  ['Xogta','Data',[['/markets','Suuqyada','Markets','markets'],['/smart-money','Smart Money','Smart Money','markets'],['/highlights','Muuqaalka suuqa','Crypto highlights','charts'],['/topic/stocks','Saamiyada','Stocks','stocks'],['/topic/forex','Forex','Forex','forex'],['/commodities','Badeecooyin','Commodities','markets'],['/etfs','ETF-yada','ETFs','stocks'],['/etf-flows','Dhaqdhaqaaqa ETF-yada','Crypto ETF flows','forex'],['/crypto-bubbles','Crypto bubble','Crypto bubbles','markets'],['/profit-calculator','Xisaabiyaha faa’iidada','Profit calculator','calculator'],['/fear-greed','Cabsi iyo Damac','Fear &amp; Greed','sentiment'],['/charts','Jaantusyada','Charts','charts'],['/liquidations','Liquidations','Liquidations','liquidations'],['/unlocks','Furitaanka tokennada','Token unlocks','unlocks'],['/sharia',...shariaTitles,'screening']]],
   ['Raadraacayaasha','Trackers',[['/halving','Bitcoin halving','Bitcoin halving','bitcoin'],['/debt','Deynta Maraykanka','US debt','debt']]]
 ];
 const terminalGlyphs={
@@ -127,7 +127,7 @@ function liquidationPriceSection(ctx){
 function visualMarketPage(ctx,key){
   const tr=(so,en)=>t(ctx,so,en);
   const bubbles=key==='crypto-bubbles';
-  const title=bubbles?tr('Goobooyinka crypto','Crypto bubbles'):tr('Xisaabiyaha faa’iidada','Profit calculator');
+  const title=bubbles?tr('Crypto bubble','Crypto bubbles'):tr('Xisaabiyaha faa’iidada','Profit calculator');
   const description=bubbles?tr('Eeg 100-ka lacagood ee ugu waaweyn qiimaha guud ee suuqa.','Explore the top 100 cryptocurrencies by market cap.'):tr('Xisaabi faa’iidada ama khasaaraha iibsi iyo iibin, iyadoo lagu darayo khidmadaha labada dhinac.','Estimate the profit or loss on a spot purchase and sale, including the fee on each trade.');
   const heading='<header class="calendar-intro"><h1>'+title+'</h1><p>'+description+'</p></header>';
   let html;

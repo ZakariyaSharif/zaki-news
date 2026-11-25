@@ -1,6 +1,6 @@
 const shariaTitles=['Xalaal iyo Xaaraan','Halal & Haram'];
 const toolsNav = {
-  'crypto-bubbles':['Goobooyinka crypto','Crypto bubbles'],'profit-calculator':['Xisaabiyaha faa’iidada','Profit calculator'],
+  'crypto-bubbles':['Crypto bubble','Crypto bubbles'],'profit-calculator':['Xisaabiyaha faa’iidada','Profit calculator'],
   'smart-money':['Smart Money','Smart Money'],markets:['Suuqyada','Markets'], highlights:['Muuqaalka suuqa','Crypto highlights'], unlocks:['Furitaanka tokennada','Token unlocks'],
   calendar:['Jadwalka dhaqaalaha','Economic calendar'], halving:['Bitcoin halving','Bitcoin halving'],
   debt:['Deynta Maraykanka','US debt'], charts:['Jaantusyada','Charts'], liquidations:['Likwideeynta','Liquidations']
@@ -311,7 +311,7 @@ function siteFooter(ctx){
     ['/unlocks',['Furitaanka tokennada','Token unlocks']],
     ['/fear-greed',['Cabsi iyo Damac','Fear &amp; Greed']],
     ['/profit-calculator',['Xisaabiyaha faa’iidada','Profit calculator']],
-    ['https://zakibubble.zakariyaacademy.com',['Goobooyinka crypto','Crypto bubbles'],true,'bubble.png'],
+    ['https://zakibubble.zakariyaacademy.com',['Crypto bubble','Crypto bubbles'],true,'bubble.png'],
     ['/halving',['Bitcoin halving','Bitcoin halving']],
     ['/calendar',['Jadwalka dhaqaalaha','Economic calendar']]
   ].filter(([path, , ext])=>{
@@ -363,7 +363,7 @@ function siteFooter(ctx){
 const edToolMeta={
   '/charts':[['Jaantusyada','Charts'],['Jaantusyo qiime oo interaktif ah','Interactive price charts'],'<polyline points="3 17 9 11 13 15 21 7"/><polyline points="16 7 21 7 21 12"/>'],
   '/etf-flows':[['Qulqulka ETF-yada crypto','Crypto ETF flows'],['Qulqulka lacagta ETF-yada crypto','Daily crypto ETF inflows and outflows'],'<path d="M4 17h4v3H4zM10 11h4v9h-4zM16 7h4v13h-4z"/>'],
-  '/crypto-bubbles':[['Goobooyinka crypto','Crypto bubbles'],['Khariidad dhaqdhaqaaqa lacagaha','Visual map of moving coins'],'<circle cx="8" cy="14" r="4"/><circle cx="16" cy="9" r="3.2"/><circle cx="18" cy="17" r="2.2"/>'],
+  '/crypto-bubbles':[['Crypto bubble','Crypto bubbles'],['Khariidad dhaqdhaqaaqa lacagaha','Visual map of moving coins'],'<circle cx="8" cy="14" r="4"/><circle cx="16" cy="9" r="3.2"/><circle cx="18" cy="17" r="2.2"/>'],
   '/smart-money':[['Smart Money','Smart Money'],['Dhaqdhaqaaqa lacagta Ethereum','Ethereum smart-money flows'],'<rect x="3" y="7" width="18" height="12" rx="2"/><path d="M3 11h18"/>'],
   '/profit-calculator':[['Xisaabiyaha faa’iidada','Profit calculator'],['Xisaabi faa’iidada iibka','Work out a trade’s return'],'<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h4"/>'],
   '/unlocks':[['Furitaanka tokennada','Token unlocks'],['Furitaanka tokennada soo socda','Upcoming token unlocks'],'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>'],
@@ -377,6 +377,77 @@ const edToolMeta={
 const edFeaturedTools=['/charts','/etf-flows','/crypto-bubbles','/smart-money','/profit-calculator','/unlocks','/liquidations','/fear-greed','/calendar','/halving','/highlights','/commodities'];
 function edIcon(d){
   return '<span class="ed-tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+d+'</svg></span>';
+}
+const edToolGroups=[
+  ['explore',['Sahami suuqyada','Explore markets'],['/charts','/crypto-bubbles','/highlights','/commodities']],
+  ['activity',['La soco dhaqdhaqaaqa','Track activity'],['/smart-money','/liquidations','/fear-greed']],
+  ['plan',['Horay u qorshee','Plan ahead'],['/profit-calculator','/unlocks','/calendar','/halving']]
+];
+const edHeroTool='/etf-flows';
+function toolHref(ctx,path){
+  if(path==='/crypto-bubbles') return {href:'https://zakibubble.zakariyaacademy.com',ext:' rel="noopener noreferrer" target="_blank"'};
+  return {href:editionHref(ctx,path),ext:''};
+}
+function toolSearchHay(meta,extra){
+  const [title,blurb]=meta;
+  return (title[0]+' '+title[1]+' '+blurb[0]+' '+blurb[1]+' '+(extra||'')).toLowerCase();
+}
+function flowBarsSvg(){
+  const vals=[42,-22,55,-18,28,48,-30,36,-14,52,22,-38,33,-20,45];
+  const w=220,h=64,mid=32,gap=3;
+  const bw=(w-(vals.length+1)*gap)/vals.length;
+  const max=Math.max(...vals.map(Math.abs));
+  const bars=vals.map((v,i)=>{
+    const x=gap+i*(bw+gap);
+    const bh=Math.max(2,(Math.abs(v)/max)*(h/2-4));
+    const y=v>=0?mid-bh:mid;
+    const fill=v>=0?'#ff854a':'#8a837d';
+    return '<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+bh.toFixed(1)+'" rx="1.2" fill="'+fill+'"/>';
+  }).join('');
+  return '<svg class="mt-hero-chart" viewBox="0 0 '+w+' '+h+'" aria-hidden="true"><line x1="0" y1="'+mid+'" x2="'+w+'" y2="'+mid+'" stroke="rgba(255,255,255,.22)" stroke-width="1"/>'+bars+'</svg>';
+}
+function mtChevron(cls){
+  return '<svg class="'+(cls||'mt-arrow')+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>';
+}
+function marketToolsBoard(ctx,variant){
+  const page=variant==='page';
+  const title=t(ctx,'Qalabka suuqa','Market tools');
+  const find=t(ctx,'Raadi qalab','Find a tool');
+  const empty=t(ctx,'Qalab kuma habboona raadinta.','No tools match that search.');
+  const heroMeta=edToolMeta[edHeroTool];
+  const heroExtra='La soco lacagaha maalinlaha ah ee soo gala iyo ka baxa Track daily fund inflows and outflows';
+  const heroBlurb=t(ctx,'La soco lacagaha maalinlaha ah ee soo gala iyo ka baxa','Track daily fund inflows and outflows');
+  const heroLink=toolHref(ctx,edHeroTool);
+  const hero='<a class="mt-hero" href="'+escape(heroLink.href)+'"'+heroLink.ext+' data-tool-hero data-tool-hay="'+escape(toolSearchHay(heroMeta,heroExtra))+'">'+
+    '<span class="mt-hero-copy">'+edIcon(heroMeta[2])+'<span><strong>'+t(ctx,...heroMeta[0])+'</strong><small>'+heroBlurb+'</small></span></span>'+
+    flowBarsSvg()+mtChevron()+
+  '</a>';
+  const groups=edToolGroups.map(([id,labels,paths],i)=>{
+    const rows=paths.map(path=>{
+      const meta=edToolMeta[path];
+      const link=toolHref(ctx,path);
+      const on=edActive(ctx,path);
+      return '<a class="mt-row'+(on?' is-active':'')+'" href="'+escape(link.href)+'"'+link.ext+(on?' aria-current="page"':'')+' data-tool-item data-tool-hay="'+escape(toolSearchHay(meta))+'">'+
+        edIcon(meta[2])+'<span class="mt-row-label">'+t(ctx,...meta[0])+'</span>'+mtChevron()+
+      '</a>';
+    }).join('');
+    return '<details class="mt-group" data-tool-group data-group="'+id+'"'+(i===0?' open':'')+'>'+
+      '<summary>'+t(ctx,...labels)+mtChevron('mt-acc-icon')+'</summary>'+
+      '<nav>'+rows+'</nav>'+
+    '</details>';
+  }).join('');
+  const search='<label class="mt-search"><span class="visually-hidden">'+find+'</span>'+
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>'+
+    '<input type="search" data-tool-query placeholder="'+find+'" aria-label="'+find+'" autocomplete="off" spellcheck="false"></label>';
+  const heading=page?'<h1 class="mt-title">'+title+'</h1>':'<h2 class="mt-title">'+title+'</h2>';
+  return '<section class="mt-board mt-'+variant+'" data-tools-board>'+heading+search+hero+'<div class="mt-groups">'+groups+'</div>'+
+    '<p class="mt-empty" data-tool-empty hidden>'+empty+'</p></section>';
+}
+function marketToolsPage(ctx){
+  const title=t(ctx,'Qalabka suuqa','Market tools');
+  return layout(ctx,title,marketToolsBoard(ctx,'page'),{
+    description:t(ctx,'Raadi qalabka suuqa: jaantusyo, qulqulka ETF-yada, iyo qalabka falanqaynta.','Find market tools: charts, crypto ETF flows, and analysis tools.')
+  });
 }
 function edActive(ctx, path){
   const here=ctx.url.pathname.replace(/\/$/,'')||'/';
@@ -457,13 +528,6 @@ function editorialHeader(ctx){
     ['/resources',t(ctx,'Xiriiriyeyaasha','Resources')],
     ['/about',t(ctx,'Nagu saabsan','About')]
   ];
-  const bubbleUrl='https://zakibubble.zakariyaacademy.com';
-  const tools=edFeaturedTools.map(path=>{
-    const [title,blurb,d]=edToolMeta[path];
-    const href=path==='/crypto-bubbles'?bubbleUrl:editionHref(ctx,path);
-    const ext=path==='/crypto-bubbles'?' rel="noopener noreferrer" target="_blank"':'';
-    return '<a class="ed-tool" href="'+escape(href)+'"'+ext+'>'+edIcon(d)+'<span><strong>'+t(ctx,...title)+'</strong><small>'+t(ctx,...blurb)+'</small></span></a>';
-  }).join('');
   const follow=[
     (ctx.profile.website||academy)?brandTextLink(ctx.profile.website||academy,'Zakariya Academy','academy.png',true,20):'',
     ctx.profile.youtube?brandTextLink(ctx.profile.youtube,'YouTube','youtube.svg',true,20):'',
@@ -482,7 +546,7 @@ function editorialHeader(ctx){
   const sheetSearch='<form class="ed-sheet-search" role="search" method="get" action="'+editionHref(ctx,'/search')+'">'+searchFields+'</form>';
   const mega='<div class="ed-mega" id="ed-mega" hidden>'+
     '<div class="ed-mega-overflow" hidden><h2>'+t(ctx,'Mawduucyada','Topics')+'</h2><nav data-ed-more-topics></nav></div>'+
-    '<div class="ed-mega-tools"><h2>'+t(ctx,'Qalabka','Tools')+'</h2><div class="ed-tool-grid">'+tools+'</div></div>'+
+    '<div class="ed-mega-tools">'+marketToolsBoard(ctx,'nav')+'</div>'+
     (follow?'<div class="ed-mega-follow">'+follow+'</div>':'')+
   '</div>';
   const sheet='<div class="ed-sheet" id="ed-sheet" hidden role="dialog" aria-modal="true" aria-label="'+t(ctx,'Liiska','Menu')+'">'+
@@ -492,7 +556,7 @@ function editorialHeader(ctx){
     '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div></div>'+
     sheetSearch+
     '<nav class="ed-sheet-nav">'+primary.map(([p,l])=>edA(ctx,p,l)).join('')+'</nav>'+
-    '<div class="ed-sheet-block"><h2>'+t(ctx,'Qalabka','Tools')+'</h2><div class="ed-tool-grid">'+tools+'</div></div>'+
+    '<div class="ed-sheet-block">'+marketToolsBoard(ctx,'nav')+'</div>'+
     (follow?'<div class="ed-mega-follow">'+follow+'</div>':'')+
   '</div>';
   return '<header class="standard-header ed-header" data-ed-header>'+
@@ -807,6 +871,7 @@ function suggestPageCatalog(ctx){
     if(!enabled(ctx,k)) return;
     add('/'+k,v[0],v[1]);
   });
+  add('/tools','Qalabka suuqa','Market tools');
   add('/markets','Suuqyada','Markets');
   add('/sharia',shariaTitles[0],shariaTitles[1]);
   add('/smart-money','Smart Money','Smart Money');
