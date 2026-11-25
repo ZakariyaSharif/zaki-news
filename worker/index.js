@@ -336,14 +336,7 @@ export default { async fetch(req,env,work) {
   if(ctx.lang==='en'&&Object.hasOwn(englishPolicies,path)) return publisherPage(ctx,...englishPolicies[path]);
   if(path==='/contact') return contact(ctx,req,env.DB);
   if(path==='/commodities'){ctx.url.searchParams.set('asset','commodities');return marketDirectory(ctx);}
-  if(path==='/smart-money') {
-    const title='Ethereum Smart Money';
-    const rows=[['NKP','+$6,893'],['TAC','+$1,723'],['REKT','+$501'],['CFG','$0'],['HASHAI','$0']];
-    const story=t(ctx,'ethereum-smart-money-24-nofeembar','ethereum-smart-money-nov24');
-    const tokenCell=symbol=>'<span class="fc-token">'+coinIcon(symbol.toLowerCase())+'<span>'+escape(symbol)+'</span></span>';
-    const body='<h1>'+title+'</h1><section class="fc-board"><h2>'+t(ctx,'Shanta token ee ugu sarreeya','Top five tokens')+'</h2><p>'+t(ctx,'Xogta Nansen ee 24 saac · 24 Nofeembar 2026, 09:23 UTC','Nansen 24-hour snapshot · November 24, 2026, 09:23 UTC')+'</p>'+fcTable(['#','Token',t(ctx,'Qulqulka saafiga ah (USD)','Net flow (USD)')],rows.map(([token,value],i)=>{const href=tradingViewChartHref('crypto',token);return {attrs:' class="ed-chart-row" data-chart-href="'+escape(href)+'"',cells:['<a class="ed-row-fill" href="'+escape(href)+'" target="_blank" rel="noopener noreferrer">'+(i+1)+'</a>',coinChartAnchor(token,tokenCell(token)),'<a class="ed-row-fill" href="'+escape(href)+'" target="_blank" rel="noopener noreferrer">'+value+'</a>']};}))+'<a href="/article/'+story+'">'+t(ctx,'Akhri falanqaynta','Read the analysis')+'</a></section>';
-    return layout(ctx,title,terminalShell(ctx,body),{terminal:'smart-money'});
-  }
+  if(path==='/smart-money') return smartMoneyPage(ctx,env);
   if(Object.hasOwn(toolsNav,path.slice(1))) return marketPage(ctx,path.slice(1),env.DB);
   if(path==='/etf-client.js') return new Response([fcDate,fcFlowNumber,fcParseFlow,fcMillions,fcRate].map(fn=>fn.toString()).join('\n')+'\n'+etfClient,{headers:{'content-type':'text/javascript; charset=utf-8'}});
   if(path==='/etf-flows')return fcFlowPage(ctx,work);

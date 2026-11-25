@@ -47,13 +47,14 @@ node --env-file-if-exists=.env.local scripts/export-hosted-articles.mjs
 | NEWSROOM_OWNER_EMAIL | Newsroom login name and authorized editor email. |
 | NEWSROOM_ADMIN_PASSWORD | Strong unique password for the self-hosted newsroom. |
 | COINGLASS_API_KEY | Optional CoinGlass data access, subject to plan entitlement. |
+| NANSEN_API_KEY | Optional Nansen Smart Money netflow key, read only on the server. |
 | ADSENSE_MODE | Optional ad mode used by the existing application. |
 | ADSENSE_PUBLISHER_ID | Optional AdSense publisher identifier. |
 | PORT | Optional local port. |
 | VERCEL_URL | Host supplied automatically by Vercel when SITE_ORIGIN is absent. |
 | DB | Original runtime database binding. The included adapters supply it automatically. |
 
-CryptoQuant and Nansen keys are not consumed by this source revision. Set local variables in .env.local, or in Vercel Project Settings under Environment Variables. Keep credentials and unredacted article exports containing drafts out of public repositories. The original ChatGPT authentication is replaced by HTTP Basic authentication on the self-hosted newsroom. Incoming identity headers are stripped. Configure both newsroom variables, then open /admin over HTTPS (localhost for development). Without the two variables the admin is disabled.
+CryptoQuant keys are not consumed by this source revision. NANSEN_API_KEY is read only on the server for /smart-money and is never sent to the browser; without it the page shows the bundled snapshot. Set local variables in .env.local, or in Vercel Project Settings under Environment Variables. Keep credentials and unredacted article exports containing drafts out of public repositories. The original ChatGPT authentication is replaced by HTTP Basic authentication on the self-hosted newsroom. Incoming identity headers are stripped. Configure both newsroom variables, then open /admin over HTTPS (localhost for development). Without the two variables the admin is disabled.
 
 ## Deploy to your GitHub and Vercel
 
