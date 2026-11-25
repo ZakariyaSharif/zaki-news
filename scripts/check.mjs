@@ -268,6 +268,8 @@ try{
 const expandedScreen=await(await get('/sharia?lang=en')).text();
 for(const name of ['Bitcoin Cash','Chainlink','Hedera','PancakeSwap','Lido DAO','Pudgy Penguins','Fartcoin'])assert.match(expandedScreen,new RegExp(name));
 for(const name of ['Search a coin','No coin found','data-sharia-query','Aptos','Injective','Official Trump'])assert.match(expandedScreen,new RegExp(name));
+for(const name of ['Lido Staked Ether','Derive','Venus','Rain','Jito Staked SOL'])assert.match(expandedScreen,new RegExp(name));
+for(const name of ['FUNToken','Playnance','Jackpotter','TG.Casino'])assert.match(expandedScreen,new RegExp(name));
 const dailyFetch=globalThis.fetch;
 try{
   globalThis.fetch=async url=>{
