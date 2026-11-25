@@ -376,3 +376,16 @@ const smartMoneySo=await (await get('/smart-money')).text();
 assert.match(smartMoneySo,/Akhri falanqaynta/);
 assert.match(smartMoneySo,/24 Nofeembar 2026, 09:23 UTC/);
 console.log('Smart Money snapshot fallback, chain tabs, and analysis button passed.');
+
+const resourcesEn=await (await get('/resources?lang=en')).text();
+assert.match(resourcesEn,/Hoopay Wallet/);
+assert.match(resourcesEn,/hoopaywallet.com\/register\?ref=iwAD0jOo/);
+assert.match(resourcesEn,/rel="sponsored noopener noreferrer"/);
+assert.match(resourcesEn,/target="_blank"/);
+assert.match(resourcesEn,/\/brand-logo\/hoopay.png/);
+assert.match(resourcesEn,/dollar wallet and payments app/);
+assert.equal((await get('/brand-logo/hoopay.png')).status,200);
+const resourcesSo=await (await get('/resources')).text();
+assert.match(resourcesSo,/Hoopay Wallet/);
+assert.match(resourcesSo,/Boorso dollar ah iyo abka lacag-bixinta/);
+console.log('Hoopay Wallet resource card passed.');

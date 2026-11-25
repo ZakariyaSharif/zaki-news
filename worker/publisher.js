@@ -238,6 +238,12 @@ const resourceGroups = [
     "Boorsada iyo amniga",
     [
       [
+        "Hoopay Wallet",
+        "https://hoopaywallet.com/register?ref=iwAD0jOo",
+        "/brand-logo/hoopay.png",
+        ["Boorso dollar ah iyo abka lacag-bixinta, oo lagu shubo lacagta moobaylka laguna wareejiyo USDT/USDC.","A dollar wallet and payments app with mobile-money top-ups and USDT/USDC transfers."]
+      ],
+      [
         "Ledger Nano X",
         "https://shop.ledger.com/pages/referral-program?referral_code=9XMZSAM98WHH4",
         "https://ugc.production.linktr.ee/Y52WKnOSPaI78peFJRy1_60262497-D04B-4B73-922C-9956E6BC8507.webp"
@@ -507,7 +513,7 @@ const resourceGroups = [
 function resourceDirectory(ctx){
   const title=t(ctx,'Xiriiriyeyaasha Zakariya','Zakariya’s resource links');
   const sections=resourceGroups.map(([en,so,rows])=>{
-    const cards=rows.map(([name,url,icon])=>'<a class="resource-card" href="'+escape(url)+'" rel="sponsored noopener noreferrer"><img src="'+escape(icon)+'" alt="" width="38" height="38" loading="lazy"><span><strong>'+escape(name)+'</strong><small>'+escape(new URL(url).hostname)+'</small></span>'+externalArrowIcon()+'</a>').join('');
+    const cards=rows.map(([name,url,icon,copy])=>{const desc=copy?t(ctx,copy[0],copy[1]):'';const host=new URL(url).hostname;return '<a class="resource-card" href="'+escape(url)+'" target="_blank" rel="sponsored noopener noreferrer"><img src="'+escape(icon)+'" alt="" width="38" height="38" loading="lazy"><span><strong>'+escape(name)+'</strong>'+(desc?'<small>'+escape(desc)+'</small>':'')+'<small>'+escape(host)+'</small></span>'+externalArrowIcon()+'</a>';}).join('');
     return '<section class="resource-section"><h2>'+escape(t(ctx,so,en))+'</h2><div class="resource-grid">'+cards+'</div></section>';
   }).join('');
   return layout(ctx,title,'<header class="calendar-intro"><h1>'+title+'</h1><p>'+t(ctx,'Qaar ka mid ah xiriiriyeyaashan waa tixraacyo ay Zakariya Academy gunno ka heli karto.','Some links are referrals and may earn Zakariya Academy a commission.')+'</p>'+brandTextLink('https://linktr.ee/Official.zakariya','Zakariya Academy · Linktree','academy.png',true,20)+'</header>'+sections);
