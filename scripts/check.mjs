@@ -144,6 +144,26 @@ for (const path of ['/','/?lang=en']){
   assert.match(markup,/class="ticker-coin" href="\/topic\/bnb/);
 }
 assert.equal([...(await (await get('/about')).text()).matchAll(/action="\/newsletter"/g)].length,1);
+const aboutSo=(await (await get('/about')).text());
+const aboutEn=(await (await get('/about?lang=en')).text());
+assert.match(aboutSo,/La kulan aasaasaha/);
+assert.match(aboutEn,/Meet the founder/);
+for (const html of [aboutSo, aboutEn]) {
+  assert.match(html,/Zakariya Sharif \(Zaki\)/);
+  assert.match(html,/HOGENT/);
+  assert.match(html,/Ghent, Belgium/);
+  assert.match(html,/80 ilaa 100K|80 to 100K/);
+  assert.match(html,/zakariyaacademy\.com/);
+  assert.match(html,/t\.me\/ZakariyaAcademy1/);
+  assert.match(html,/discord\.gg\/g2kBMMA9TC/);
+  assert.match(html,/brand-logo\/academy\.png/);
+  assert.doesNotMatch(html,/Nansen ambassador/i);
+}
+assert.match(aboutEn,/marketing student at HOGENT/);
+assert.match(aboutEn,/official CoinAnk partner/);
+assert.match(aboutSo,/arday marketing ah/i);
+assert.match(aboutSo,/official CoinAnk partner/);
+
 const liquidationPage=await (await get('/liquidations?lang=en')).text();
 assert.match(liquidationPage,/data-window="1440"/);
 assert.match(liquidationPage,/data-window="720"/);

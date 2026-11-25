@@ -1111,12 +1111,54 @@ function aboutPage(ctx,stories){
     'The Zaki News editorial policy places DeFi protocol tokens under Haram and meme coins under Mashbooh. The Halal examples are classified by the linked screener. These labels are educational and do not certify every use of a token.'
   );
 
+
+  const founderPhoto=typeof brandAssets!=='undefined'&&Object.hasOwn(brandAssets,'academy.png')
+    ?'/brand-logo/academy.png'
+    :'/images/academy-mark.webp';
+  const founderProfile=ctx.profile||{};
+  const founderLinks=[
+    [founderProfile.website||academy,'Zakariya Academy'],
+    [founderProfile.x,'X'],
+    [founderProfile.youtube,'YouTube'],
+    [founderProfile.telegram,'Telegram'],
+    [founderProfile.discord,'Discord']
+  ].filter(([href])=>href).map(([href,label])=>{
+    const extra=' rel="noopener noreferrer" target="_blank"';
+    return '<a class="ed-brand-link" href="'+escape(href)+'"'+extra+'><span>'+escape(label)+'</span>'+externalArrowIcon()+'</a>';
+  }).join('');
+  const founder= '<section class="about-section about-founder" id="meet-the-founder">'+
+    '<h2>'+t(ctx,'La kulan aasaasaha','Meet the founder')+'</h2>'+
+    '<div class="about-founder-card">'+
+      '<img class="about-founder-photo" src="'+founderPhoto+'" alt="Zakariya Academy logo" width="120" height="120">'+
+      '<div class="about-founder-copy">'+
+        '<h3>Zakariya Sharif (Zaki)</h3>'+
+        '<p class="about-founder-role">'+t(ctx,
+          'Arday marketing ah oo dhigta HOGENT, kuna nool Ghent, Belgium.',
+          'A marketing student at HOGENT, based in Ghent, Belgium.'
+        )+'</p>'+
+        '<p>'+t(ctx,
+          'Wuxuu aasaasay Zakariya Academy, oo ah aasaaska ugu horreeyay ee waxbarashada blockchain iyo crypto ee Af Soomaali, horraantii 2026. Shaqadu waa Af Soomaali iyo English, waxaana laga helaa zakariyaacademy.com.',
+          'He founded Zakariya Academy, the first Somali language blockchain and crypto education platform, in early 2026. The work is bilingual in Somali and English at zakariyaacademy.com.'
+        )+'</p>'+
+        '<p>'+t(ctx,
+          'Bulshadu waa ku dhawaad 80 ilaa 100K oo ku baahsan Telegram, YouTube, TikTok, Facebook iyo X, oo ay ku jiraan ilaa 20K YouTube. Academy waxay bixisaa in ka badan 3 koorso lacag ah iyo in ka badan 1000 muuqaal waxbarasho.',
+          'The community is about 80 to 100K people across Telegram, YouTube, TikTok, Facebook and X, including about 20K on YouTube. The Academy offers more than 3 paid courses and more than 1000 educational videos.'
+        )+'</p>'+
+        '<p>'+t(ctx,
+          'Zaki waa CQVA certified, qoraa la xaqiijiyey ee CoinMarketCap, iyo official CoinAnk partner. Waxbarashadu waa mid Sharia la shaandheeyay, oo leh calamado Xalaal, Xaaraan iyo Mashbooh.',
+          'Zaki is CQVA certified, a verified CoinMarketCap author and an official CoinAnk partner. The education is Sharia screened, with Xalaal, Xaaraan and Mashbooh labels.'
+        )+'</p>'+
+        '<nav class="about-founder-links" aria-label="'+t(ctx,'Xiriiriyeyaasha aasaasaha','Founder links')+'">'+founderLinks+'</nav>'+
+      '</div>'+
+    '</div></section>';
+
   const socials=footerSocials(ctx.profile||{});
   const page='<article class="about-page wrap">'+
     '<header class="about-hero"><p class="about-kicker">'+kicker+'</p>'+
     '<h1>'+headline+'</h1><p class="about-dek">'+dek+'</p>'+
     (stats?'<ul class="about-stats">'+stats+'</ul>':'')+
     '</header>'+
+    founder+
     '<section class="about-section"><h2>'+t(ctx,'Waxaan ka hadalnaa','What we cover')+'</h2>'+
     '<div class="about-covers">'+coverCards+'</div></section>'+
     '<section class="about-section" id="editorial-policy"><h2>'+t(ctx,'Sida aan u shaqeyno','How we work')+'</h2>'+
@@ -1124,15 +1166,6 @@ function aboutPage(ctx,stories){
     '<section class="about-section about-sharia"><h2>'+t(ctx,'Habka Xalaal iyo Xaaraan','Sharia approach')+'</h2>'+
     '<p>'+sharia+'</p>'+
     '<p><a class="text-link" href="'+editionHref(ctx,'/sharia')+'">'+t(ctx,'Fur hagaha Xalaal iyo Xaaraan','Open the Halal and Haram guide')+'</a></p></section>'+
-    '<section class="about-section about-founder"><h2>'+t(ctx,'Ka dambeysa Zaki News','Behind Zaki News')+'</h2>'+
-    '<div class="about-founder-card">'+
-      '<span class="about-mono" aria-hidden="true">ZS</span>'+
-      '<div><h3>Zakariya Sharif (Zaki)</h3>'+
-      '<p>'+t(ctx,
-        'Aasaasaha Zakariya Academy. CQVA certified, qoraa la xaqiijiyey ee CoinMarketCap, kuna nool Ghent, Belgium.',
-        'Founder of Zakariya Academy. CQVA certified, a verified CoinMarketCap author, based in Ghent, Belgium.'
-      )+'</p></div>'+
-    '</div></section>'+
     '<section class="about-section about-follow"><h2>'+t(ctx,'Na raac, nala soo xiriir','Follow and contact')+'</h2>'+
     socials+
     '<p class="about-follow-links">'+
