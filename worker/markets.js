@@ -331,23 +331,160 @@ const unlockHours = {
   'KAITO/2026-11-20':'12:00','ZRO/2026-11-20':'11:00','H/2026-11-23':'10:13',
   'KNTQ/2026-11-27':'05:48','GRVT/2026-11-29':'16:00','EIGEN/2026-11-30':'23:44'
 };
+
+const unlockSupplySnapshot={
+  ZRO:{circulating:399976127.73,total:1000000000,max:1000000000},
+  XPL:{circulating:4988888888.89,total:10000000000,max:null},
+  OP:{circulating:2290771093,total:4294967296,max:4294967296},
+  EIGEN:{circulating:1023348758.46,total:1866045888.07,max:null},
+  WAL:{circulating:2670833333,total:5000000000,max:5000000000},
+  KNTQ:{circulating:324523645.77,total:1000000000,max:1000000000},
+  KAITO:{circulating:241388889,total:1000000000,max:1000000000},
+  H:{circulating:2160466197.43,total:10000000000,max:10000000000},
+  SOLV:{circulating:5904733333,total:9660000000,max:9660000000},
+  GRVT:{circulating:114312328,total:1000000000,max:1000000000}
+};
+let unlockSupplyCache=null;
+async function loadUnlockSupply(){
+  const ids=Object.values(unlockPrices).map(([id])=>id.replace(/^coingecko:/,''));
+  const data=await remote('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids='+ids.join(',')+'&per_page=250');
+  const out={};
+  for(const [symbol,[id]] of Object.entries(unlockPrices)){
+    const coin=Array.isArray(data)?data.find(c=>c.id===id.replace(/^coingecko:/,'')):null;
+    const circulating=Number(coin?.circulating_supply);
+    const max=Number(coin?.max_supply);
+    const total=Number(coin?.total_supply);
+    const cap=max>0?max:total;
+    if(circulating>0&&cap>0) out[symbol]={circulating,total:cap,max:max>0?max:null};
+  }
+  if(!Object.keys(out).length) throw Error('Missing supply');
+  return out;
+}
+async function refreshUnlockSupply(){
+  const response=await marketData('unlock-supply',600,loadUnlockSupply);
+  if(response.ok){
+    const data=await response.json();
+    if(data&&!data.error) unlockSupplyCache=data;
+  }
+  return unlockSupplyCache||unlockSupplySnapshot;
+}
+function unlockSupply(symbol){
+  return unlockSupplyCache?.[symbol]||unlockSupplySnapshot[symbol]||null;
+}
+function usdPrice(n){
+  if(!Number.isFinite(n)||n<=0) return '—';
+  let s=Number(n.toPrecision(4)).toString();
+  if(/e/i.test(s)){
+    const [mant,exp]=s.split(/e/i);
+    const e=Number(exp);
+    const digits=mant.replace('.','');
+    if(e<0) s='0.'+'0'.repeat(Math.max(0,-e-1))+digits;
+  }
+  return '$'+s;
+}
+function compactAmount(n){
+  if(!Number.isFinite(n)) return '—';
+  const abs=Math.abs(n);
+  if(abs<1000) return n.toLocaleString('en-US',{maximumFractionDigits:2});
+  const [div,suf]=abs>=1e9?[1e9,'B']:abs>=1e6?[1e6,'M']:[1e3,'K'];
+  return (n/div).toLocaleString('en-US',{maximumFractionDigits:2,minimumFractionDigits:0})+suf;
+}
+function compactUsd(n){
+  if(!Number.isFinite(n)) return '—';
+  const abs=Math.abs(n);
+  if(abs<1000) return '$'+n.toLocaleString('en-US',{maximumFractionDigits:2});
+  const [div,suf]=abs>=1e9?[1e9,'B']:abs>=1e6?[1e6,'M']:[1e3,'K'];
+  return '$'+(n/div).toLocaleString('en-US',{maximumFractionDigits:1,minimumFractionDigits:1})+suf;
+}
+function unlockSymbol(row){
+  return (row.title.split(/[ ·]/)[0]||'').toUpperCase();
+}
+function unlockStamp(ts){
+  if(!ts) return '';
+  return new Date(ts*1000).toISOString().slice(0,16).replace('T',' ')+' UTC';
+}
+const unlockMonths=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function unlockWhenLabel(ctx,row){
+  const [,month,day]=row.event_date.split('-').map(Number);
+  const date=unlockMonths[month-1]+' '+day;
+  const hour=unlockHours[unlockSymbol(row)+'/'+row.event_date];
+  return hour?date+', '+hour+' UTC':date+', '+t(ctx,'Waqtiga lama sheegin','Time TBC');
+}
+function unlockState(row,now=Date.now()){
+  const today=calendarToday('UTC');
+  const hour=unlockHours[unlockSymbol(row)+'/'+row.event_date];
+  const start=hour?Date.parse(row.event_date+'T'+hour+':00Z'):null;
+  const isToday=row.event_date===today;
+  const isPast=row.event_date<today||(isToday&&start!=null&&start<=now);
+  return {isToday,isPast};
+}
+function unlockSupplyCell(ctx,row){
+  const amount=Number(row.amount);
+  const supply=unlockSupply(unlockSymbol(row));
+  if(supply&&supply.total>0&&Number.isFinite(amount)){
+    const circ=Math.max(0,supply.circulating);
+    const unlock=Math.max(0,amount);
+    const locked=Math.max(0,supply.total-circ-unlock);
+    const pct=n=>100*n/supply.total;
+    const circPct=pct(circ),unlockPct=pct(unlock),lockedPct=pct(locked);
+    const fmt=n=>n.toLocaleString('en-US',{maximumFractionDigits:n>=10?1:2})+'%';
+    const title=t(ctx,'Sahayda wareegaysa','Circulating supply')+' '+fmt(circPct)+' · '+t(ctx,'Furitaankan','This unlock')+' '+fmt(unlockPct)+' · '+t(ctx,'Xiran','Locked')+' '+fmt(lockedPct);
+    return '<div class="unlock-supply" title="'+escape(title)+'"><div class="unlock-supply-bar" aria-hidden="true"><i class="is-circ" style="width:'+circPct.toFixed(2)+'%"></i><i class="is-unlock" style="width:'+unlockPct.toFixed(2)+'%"></i><i class="is-locked" style="width:'+lockedPct.toFixed(2)+'%"></i></div><small>'+fmt(circPct)+' / '+fmt(unlockPct)+' / '+fmt(lockedPct)+'</small></div>';
+  }
+  return row.supply==null?'—':row.supply+'%';
+}
+function unlockOutlookChart(ctx,rows){
+  const today=calendarToday('UTC');
+  const until=daysAfter(today,30);
+  const bag=new Map();
+  for(const r of rows){
+    if(r.event_date<today||r.event_date>=until) continue;
+    const sym=unlockSymbol(r);
+    const asset=unlockAsset(sym);
+    const value=r.amount!=null&&asset?r.amount*asset[1]:Number(r.usd);
+    if(!(value>0)) continue;
+    const cur=bag.get(sym)||{value:0};
+    cur.value+=value;
+    bag.set(sym,cur);
+  }
+  const items=[...bag.entries()].sort((a,b)=>b[1].value-a[1].value);
+  if(!items.length) return '';
+  const max=items[0][1].value;
+  const bars=items.map(([sym,info])=>{
+    const w=Math.max(3,Math.round(100*info.value/max));
+    return '<div class="unlock-bar-row"><span class="unlock-bar-name">'+coinIcon(sym.toLowerCase())+' '+escape(sym)+'</span><span class="unlock-bar-track"><i style="width:'+w+'%"></i></span><span class="unlock-bar-val">'+compactUsd(info.value)+'</span></div>';
+  }).join('');
+  return '<section class="unlock-outlook"><h2>'+t(ctx,'Qiimaha furitaanka 30-ka maalmood ee soo socda','Unlock value over the next 30 days')+'</h2>'+bars+'</section>';
+}
+
 function unlockDetails(ctx,row){
-  const symbol=row.title.split(/[ ·]/)[0].toUpperCase();
+  const symbol=unlockSymbol(row);
   const hour=unlockHours[symbol+'/'+row.event_date];
   const asset=unlockAsset(symbol);
-  const timestamp=asset?new Date(asset[2]*1000).toISOString().slice(0,19).replace('T',' ')+' UTC':'';
-  const format=new Intl.NumberFormat(ctx.lang,{style:'currency',currency:'USD',maximumSignificantDigits:5});
-  return '<td><time>'+escape(row.event_date)+'</time><small class="unlock-detail">'+(hour?publicLink('https://cryptolunar.com/token-unlocks/',hour+' UTC · '+t(ctx,'Qiyaas','Estimated')):t(ctx,'Saacadda lama xaqiijin','Time unconfirmed'))+'</small></td><td>'+ (asset?'<span data-stream="'+(unlockGateSymbols.includes(symbol)?'gate':'')+'" data-time="'+asset[2]+'" data-unlock-price="'+escape(symbol)+'">'+format.format(asset[1])+'</span><small class="unlock-detail" data-unlock-stamp="'+escape(symbol)+'">'+'DefiLlama · '+timestamp+'</small>':'—')+'</td>';
+  const state=unlockState(row);
+  const badge=state.isToday?'<span class="unlock-badge">'+t(ctx,'Maanta','Today')+'</span>':'';
+  const when='<time datetime="'+escape(row.event_date+(hour?'T'+hour+':00Z':''))+'">'+escape(unlockWhenLabel(ctx,row))+'</time>'+badge;
+  const stamp=asset?'DefiLlama · '+unlockStamp(asset[2]):'';
+  const price=asset?'<span data-stream="'+(unlockGateSymbols.includes(symbol)?'gate':'')+'" data-time="'+asset[2]+'" data-unlock-price="'+escape(symbol)+'" title="'+escape(stamp)+'">'+usdPrice(asset[1])+'</span>':'—';
+  return '<td class="unlock-when">'+when+'</td><td>'+price+'</td>';
 }
 function scheduleTable(ctx,rows,unlock){
   if(!rows.length) return '<p class="meta">'+t(ctx,'Weli dhacdo la xaqiijiyay ma jirto.','No verified events are listed yet.')+'</p>';
-  const head=unlock?['Token',t(ctx,'Isha','Source'),t(ctx,'Waqtiga furitaanka','Unlock date / time'),t(ctx,'Qiimaha token-ka','Token price'),t(ctx,'Tirada','Amount'),t(ctx,'Qiimaha furitaanka','Unlock value'),t(ctx,'Sahayda wareegaysa (%)','Circulating supply (%)')]:[t(ctx,'Dhacdo','Event'),t(ctx,'Taariikh','Date')];
+  const head=unlock?['Token',t(ctx,'Isha','Source'),t(ctx,'Waqtiga furitaanka','Unlock date / time'),t(ctx,'Qiimaha token-ka','Token price'),t(ctx,'Tirada','Amount'),t(ctx,'Qiimaha furitaanka','Unlock value'),t(ctx,'Sahayda wareegaysa','Circulating supply')]:[t(ctx,'Dhacdo','Event'),t(ctx,'Taariikh','Date')];
   const sourceCell=r=>'<td>'+publicLink(r.source,r.source===unlockSource?'Toolz':new URL(r.source).hostname.replace(/^www\./,''))+'</td>';
-  return '<div class="studio-table"><table><thead><tr>'+head.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr'+(unlock?' class="ed-chart-row" data-chart-href="'+escape(tradingViewChartHref('crypto',(r.title.split(/[ ·]/)[0]||'')))+'"':'')+'><td>'+(unlock?coinChartAnchor((r.title.split(/[ ·]/)[0]||''),'<span class="unlock-coin">'+coinIcon((r.title.split(/[ ·]/)[0]||'').toLowerCase())+'<strong>'+escape(r.title)+'</strong></span>'):publicLink(r.source,r.title))+'</td>'+(unlock?sourceCell(r)+unlockDetails(ctx,r):'<td>'+escape(r.event_date)+'</td>')+(unlock?'<td>'+(r.amount===null?'—':r.amount.toLocaleString('en-US'))+'</td><td data-unlock-amount="'+(r.amount??'')+'">'+(r.amount!=null&&unlockAsset((r.title.split(/[ ·]/)[0]||'').toUpperCase())?usd(r.amount*unlockAsset((r.title.split(/[ ·]/)[0]||'').toUpperCase())[1]):'—')+'</td><td>'+(r.supply===null?'—':r.supply+'%')+'</td>':'')+'</tr>').join('')+'</tbody></table></div>'+(unlock?'<p class="meta">'+publicLink('https://defillama.com/','DefiLlama')+' · '+t(ctx,'Gate wuxuu bixiyaa qiimaha USDT ee tooska ah. Qiimaha USD waxaa laga helaa DefiLlama.','Gate streams USDT trades. USD quotes come from DefiLlama. Unlock value equals the token amount multiplied by its latest quote.')+'</p>':'');
+  return '<div class="studio-table"><table><thead><tr>'+head.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+rows.map(r=>{
+    if(!unlock) return '<tr><td>'+publicLink(r.source,r.title)+'</td><td>'+escape(r.event_date)+'</td></tr>';
+    const sym=unlockSymbol(r);
+    const asset=unlockAsset(sym);
+    const state=unlockState(r);
+    const value=r.amount!=null&&asset?compactUsd(r.amount*asset[1]):'—';
+    return '<tr class="ed-chart-row unlock-row'+(state.isPast?' is-past':'')+'" data-chart-href="'+escape(tradingViewChartHref('crypto',sym))+'"><td>'+coinChartAnchor(sym,'<span class="unlock-coin">'+coinIcon(sym.toLowerCase())+'<strong>'+escape(r.title)+'</strong></span>')+'</td>'+sourceCell(r)+unlockDetails(ctx,r)+'<td>'+(r.amount===null?'—':compactAmount(r.amount))+'</td><td data-unlock-amount="'+(r.amount??'')+'">'+value+'</td><td>'+unlockSupplyCell(ctx,r)+'</td></tr>';
+  }).join('')+'</tbody></table></div>'+(unlock?'<p class="meta unlock-notes">'+publicLink('https://www.coingecko.com/','CoinGecko')+' · '+publicLink('https://defillama.com/','DefiLlama')+' · '+t(ctx,'Qiimaha waxaa lagu muujiyaa USD (USDT ≈ USD). Qiimaha furitaanku waa tirada tokeneed ee lagu dhufto qiimaha ugu dambeeyay. Sahayda wareegaysa, furitaankan iyo qaybta xiran waxaa laga helaa CoinGecko.','Prices are shown in USD (USDT ≈ USD). Unlock value equals the token amount multiplied by its latest quote. Circulating, this unlock, and locked shares use CoinGecko supply figures.')+'</p>':'');
 }
 async function nextUnlocks(ctx,db){
   if(!enabled(ctx,'unlocks')) return '';
   await refreshUnlockQuotes();
+  await refreshUnlockSupply();
   const rows=await unlockRows(db,calendarToday('UTC'),'',4);
   return '<section class="market-block"><h2>'+t(ctx,'Furitaanka tokennada ee soo socda','Upcoming token unlocks')+'</h2>'+scheduleTable(ctx,rows,true)+'<a class="text-link" href="'+editionHref(ctx,'/unlocks')+'">'+t(ctx,'Eeg jadwalka','See schedule')+' →</a></section>';
 }
@@ -362,12 +499,14 @@ async function marketPage(ctx,key,db){
   if(key==='markets') return marketDirectory(ctx);
   if(key==='unlocks'){
     await refreshUnlockQuotes();
+    await refreshUnlockSupply();
     const view=ctx.url.searchParams.get('view');
     const today=calendarToday('UTC');
     const end=view==='today'?daysAfter(today,1):view==='week'?daysAfter(today,7):'';
     const rows=await unlockRows(db,today,end);
+    const monthRows=await unlockRows(db,today,daysAfter(today,30));
     const toggle=(mode,label)=>'<a href="'+editionHref(ctx,'/unlocks'+(mode?'?view='+mode:''))+'"'+((mode===view||!mode&&!['today','week'].includes(view))?' aria-current="page"':'')+'>'+label+'</a>';
-    content='<nav class="calendar-tabs">'+toggle('',t(ctx,'Dhammaan','All upcoming'))+toggle('today',t(ctx,'Maanta','Today'))+toggle('week',t(ctx,'7 maalmood','Next 7 days'))+'</nav>'+scheduleTable(ctx,rows,true)+'<p class="meta">'+t(ctx,'Saamigu waa boqolkiiba sahayda wareegaysa. Qiimayaasha iyo taariikhuhu waa qiyaas. Xogta tixraaca waxa la hubiyay 17 Nofeembar 2026.','Share refers to circulating supply. Dates and USD values are estimates. Reference rows were checked November 17, 2026.')+'</p>';
+    content='<div class="unlock-page"><nav class="calendar-tabs">'+toggle('',t(ctx,'Dhammaan','All upcoming'))+toggle('today',t(ctx,'Maanta','Today'))+toggle('week',t(ctx,'7 maalmood','Next 7 days'))+'</nav>'+unlockOutlookChart(ctx,monthRows)+scheduleTable(ctx,rows,true)+'<p class="meta unlock-notes">'+t(ctx,'Saamigu waa boqolkiiba wadarta ama ugu badnaan sahayda. Qiimayaasha iyo taariikhuhu waa qiyaas. Xogta tixraaca waxa la hubiyay 17 Nofeembar 2026.','Shares are percentages of total or max supply. Dates and USD values are estimates. Reference rows were checked November 17, 2026.')+'</p></div>';
   }
   if(key==='calendar'){
     const range=calendarRange(ctx,calendarToday('America/New_York'));

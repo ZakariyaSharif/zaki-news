@@ -862,19 +862,36 @@ if(document.querySelector('[data-unlock-price]')){
   const cells=[...document.querySelectorAll('[data-unlock-price]')];
   const pairs=[...new Set(cells.filter(cell=>cell.dataset.stream==='gate').map(cell=>cell.dataset.unlockPrice+'_USDT'))];
   let socket,retry,stopped=false;
+  function usdPrice(n){
+    if(!Number.isFinite(n)||n<=0) return '—';
+    let s=Number(n.toPrecision(4)).toString();
+    if(/e/i.test(s)){
+      const [mant,exp]=s.split(/e/i);
+      const e=Number(exp);
+      const digits=mant.replace('.','');
+      if(e<0) s='0.'+'0'.repeat(Math.max(0,-e-1))+digits;
+    }
+    return '$'+s;
+  }
+  function compactUsd(n){
+    if(!Number.isFinite(n)) return '—';
+    const abs=Math.abs(n);
+    if(abs<1000) return '$'+n.toLocaleString('en-US',{maximumFractionDigits:2});
+    const [div,suf]=abs>=1e9?[1e9,'B']:abs>=1e6?[1e6,'M']:[1e3,'K'];
+    return '$'+(n/div).toLocaleString('en-US',{maximumFractionDigits:1,minimumFractionDigits:1})+suf;
+  }
   function update(symbol,price,time,source){
     if(!(price>0)||!Number.isFinite(price)||!Number.isFinite(time)||time<=0||time>Date.now()+60000)return;
-    const usd=source==='DefiLlama';
+    const label=source==='DefiLlama'?'DefiLlama':'Gate';
     for(const cell of cells){
       if(cell.dataset.unlockPrice!==symbol||time<Number(cell.dataset.time)*1000)continue;
       if(source!=='stream'&&cell.dataset.source==='stream'&&Date.now()-Number(cell.dataset.time)*1000<30000)continue;
       cell.dataset.time=String(time/1000);
       cell.dataset.source=source;
-      const display=(n,opts)=> (usd?'$':'')+n.toLocaleString(document.documentElement.lang,opts)+(usd?'':' USDT');
-      cell.textContent=display(price,{maximumSignificantDigits:6});
+      cell.textContent=usdPrice(price);
+      cell.title=label+' · '+new Date(time).toISOString().slice(0,16).replace('T',' ')+' UTC';
       const value=cell.closest('tr').querySelector('[data-unlock-amount]');
-      if(value?.dataset.unlockAmount)value.textContent=display(Number(value.dataset.unlockAmount)*price,{maximumFractionDigits:2});
-      cell.nextElementSibling.textContent=(usd?'DefiLlama':'Gate')+' · '+new Date(time).toISOString().slice(0,19).replace('T',' ')+' UTC';
+      if(value?.dataset.unlockAmount)value.textContent=compactUsd(Number(value.dataset.unlockAmount)*price);
     }
   }
   function connect(){

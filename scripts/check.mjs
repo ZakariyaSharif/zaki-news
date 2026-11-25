@@ -160,6 +160,9 @@ try {
   assert.match(unlocks,/KAITO/);
   assert.match(unlocks,/Circulating supply/);
   assert.doesNotMatch(unlocks,/Walrus/);
+  assert.match(unlocks,/Time TBC/);
+  assert.match(unlocks,/Unlock value over the next 30 days/);
+  assert.doesNotMatch(unlocks,/ USDT/);
   const calendar=await (await get('/calendar?lang=en&view=week')).text();
   assert.match(calendar,/FOMC meeting minutes/);
   assert.match(calendar,/data-last-date="2026-11-24"/);
@@ -208,6 +211,7 @@ try{
   assert.match(todayUnlocks,/SOLV/);
   assert.match(todayUnlocks,/coin-logo\/solv.png/);
   assert.match(todayUnlocks,/>Toolz<\/a>/);
+  assert.match(todayUnlocks,/>Today</);
   assert.doesNotMatch(todayUnlocks,/Kaito/);
 }finally{globalThis.Date=actualDate;}
 for(const path of ['/','/?lang=en']){
