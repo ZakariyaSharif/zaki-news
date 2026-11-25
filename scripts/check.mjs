@@ -485,6 +485,11 @@ assert.match(pceEn,/\/images\/btc-pce-25\.webp/);
 const pceSo=await (await get('/article/bitcoin-hoos-57209-kadib-pce')).text();
 assert.match(pceSo,/Bitcoin oo hoos ugu dhacay \$57,209 kadib sicir bararka Maraykanka/);
 assert.match(await (await get('/?lang=en')).text(),/Bitcoin falls to \$57,209/);
+const homeThumbs=await (await get('/?lang=en')).text();
+assert.match(homeThumbs,/ed-type-thumb/);
+assert.match(homeThumbs,/\/images\/btc-pce-25\.webp/);
+assert.match(homeThumbs,/class="ed-item-thumb ed-type-thumb"|class="ed-type-thumb"/);
+
 assert.match(await (await get('/')).text(),/Bitcoin oo hoos ugu dhacay \$57,209/);
 assert.equal((await get('/images/btc-pce-25.webp')).headers.get('content-type'),'image/webp');
 console.log('Hoopay Wallet resource card, NordVPN logo, community links, and 25 Nov article passed.');

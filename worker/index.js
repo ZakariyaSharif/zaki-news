@@ -47,7 +47,21 @@ function allowedFormOrigin(req,ctx){
 }
 const https = value => { try { const url = new URL(value); return url.protocol === 'https:' && !url.username && !url.password ? url.href : ''; } catch { return ''; } };
 const wordCount = a => Math.max(1,Math.ceil(a.body.trim().split(/\s+/).length/220));
-const storyImage = (a, attributes='loading="lazy"') => '<img src="'+escape(a.image)+'" alt="'+escape(a.image_alt)+'" '+attributes+'>';
+const typeCoverNames=new Set([
+  'anthropic-debut.webp','btc-drop-24.webp','btc-etf-outflows-24.webp','btc-pce-25.webp',
+  'btc-rebound-23.webp','btc-session.webp','bullpen-24.webp','doj-binance-24.webp',
+  'ecb-october-account.webp','eth-1700-24.webp','eth-flows-nov24.webp','gold-session.webp',
+  'learn-blocks.webp','learn-btc.webp','learn-eth.webp','learn-layers.webp','learn-sol.webp',
+  'mica-provider-register.webp','nasdaq-session.webp','nvda-return-23.webp','sol-xrp-etf-24.webp',
+  'uk-retail.webp','zk-batch-proof.webp','zscaler-deal-23.webp'
+]);
+const isTypeCover=src=>typeCoverNames.has(String(src||'').split('/').pop());
+const typeThumbAttrs=(src,attributes='')=>{
+  if(!isTypeCover(src)) return attributes||'';
+  if(/\bclass="/.test(attributes)) return attributes.replace(/\bclass="/,'class="ed-type-thumb ');
+  return (attributes?attributes+' ':'')+'class="ed-type-thumb"';
+};
+const storyImage = (a, attributes='loading="lazy"') => '<img src="'+escape(a.image)+'" alt="'+escape(a.image_alt)+'" '+typeThumbAttrs(a.image,attributes)+'>';
 const section = (title, href='', label='Dhammaan eeg →') => '<div class="section-title"><h2>'+escape(title)+'</h2>'+(href ? '<a href="'+href+'">'+label+'</a>':'')+'</div>';
 const readingLabel = (ctx,a) => { const n=wordCount(a); return t(ctx, n+' daqiiqo oo akhris ah', n===1?'1-minute read':n+'-minute read'); };
 const meta = (a,profile,ctx) => '<div class="meta">'+(profile?.author===a.author?'<a class="text-link" href="/author">'+escape(a.author)+'</a>':escape(a.author))+' · '+(a.sample ? t(ctx,'Maqaal tusaale ah','Sample article') : '<time datetime="'+escape(a.published_at)+'">'+date(a.published_at,ctx.lang)+'</time>')+' · '+readingLabel(ctx,a)+'</div>';

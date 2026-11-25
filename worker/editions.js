@@ -605,7 +605,7 @@ function homeSectionMeta(ctx,a){
 function homeFeatureCard(ctx,a,pool){
   const story=storyCardImage(a,pool);
   const img=story.image
-    ? '<img src="'+escape(story.image)+'" alt="'+escape(story.image_alt||'')+'" width="720" height="450" loading="lazy">'
+    ? '<img src="'+escape(story.image)+'" alt="'+escape(story.image_alt||'')+'" '+typeThumbAttrs(story.image,'width="720" height="450" loading="lazy"')+'>'
     : '<span class="ed-feature-fallback" aria-hidden="true">'+mark+'</span>';
   const cat=a.sample?t(ctx,'Hagahan','Guide'):categoryName(ctx,a.category);
   return '<a class="ed-feature" href="'+storyUrl(a)+'">'+
@@ -619,7 +619,7 @@ function homeFeatureCard(ctx,a,pool){
 function homeMiniCard(ctx,a,pool){
   const story=storyCardImage(a,pool);
   const img=story.image
-    ? '<img src="'+escape(story.image)+'" alt="'+escape(story.image_alt||'')+'" width="360" height="220" loading="lazy">'
+    ? '<img src="'+escape(story.image)+'" alt="'+escape(story.image_alt||'')+'" '+typeThumbAttrs(story.image,'width="360" height="220" loading="lazy"')+'>'
     : '<span class="ed-mini-fallback" aria-hidden="true">'+mark+'</span>';
   return '<a class="ed-mini" href="'+storyUrl(a)+'">'+
     img+
@@ -700,7 +700,7 @@ function editorialHome(ctx, list, snapshot, videos){
     const when=a.sample?'':date(a.published_at,ctx.lang);
     const mins=t(ctx, wordCount(a)+' daqiiqo', wordCount(a)==1?'1 min':wordCount(a)+' min');
     const thumb=a.image
-      ? '<img class="ed-item-thumb" src="'+escape(a.image)+'" alt="'+escape(a.image_alt||'')+'" width="96" height="72" loading="lazy">'
+      ? '<img '+typeThumbAttrs(a.image,'class="ed-item-thumb"')+' src="'+escape(a.image)+'" alt="'+escape(a.image_alt||'')+'" width="96" height="72" loading="lazy">'
       : '<span class="ed-item-thumb ed-item-thumb-empty" aria-hidden="true"></span>';
     return '<li><a href="'+storyUrl(a)+'">'+thumb+'<span class="ed-item-copy"><h3>'+escape(a.title)+'</h3><span class="ed-item-meta">'+clock+' '+mins+(when?' <i>·</i> '+when:'')+'</span></span></a></li>';
   }).join('');
@@ -787,7 +787,7 @@ function rankedSearchStories(ctx,stories,q){
 function searchResultItem(ctx,a){
   const href=editionHref(ctx,storyUrl(a));
   const thumb=a.image
-    ? '<img class="ed-search-thumb" src="'+escape(a.image)+'" alt="" width="160" height="100" loading="lazy">'
+    ? '<img '+typeThumbAttrs(a.image,'class="ed-search-thumb"')+' src="'+escape(a.image)+'" alt="" width="160" height="100" loading="lazy">'
     : '<span class="ed-search-thumb is-empty" aria-hidden="true"></span>';
   const langNote=(a.language||'so')!==ctx.lang?'<span class="ed-search-lang">'+(a.language||'so').toUpperCase()+'</span>':'';
   const when=a.sample||!a.published_at?'':date(a.published_at,ctx.lang);
