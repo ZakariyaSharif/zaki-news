@@ -442,12 +442,27 @@ assert.match(resourcesEn,/\/brand-logo\/hoopay.png/);
 assert.doesNotMatch(resourcesEn,/dollar wallet and payments app/);
 assert.match(resourcesEn,/>hoopaywallet.com</);
 assert.match(resourcesEn,/\/brand-logo\/vpn-n.png/);
+assert.match(resourcesEn,/<strong>Trezor<\/strong>/);
+assert.match(resourcesEn,/trezorio\.refr\.cc\/default\/u\/zakariya/);
+assert.match(resourcesEn,/\/brand-logo\/hw-t\.png/);
+assert.match(resourcesEn,/>Hardware wallet</);
+assert.doesNotMatch(resourcesEn,/https:\/\/trezor\.io\//);
+assert.doesNotMatch(resourcesEn,/favicons\?domain=trezor\.io/);
+assert.equal((await get('/brand-logo/hw-t.png')).status,200);
+assert.equal((await get('/brand-logo/hw-t.png')).headers.get('content-type'),'image/png');
+
 assert.equal((await get('/brand-logo/hoopay.png')).status,200);
 assert.equal((await get('/brand-logo/vpn-n.png')).status,200);
 const resourcesSo=await (await get('/resources')).text();
 assert.match(resourcesSo,/Hoopay Wallet/);
 assert.doesNotMatch(resourcesSo,/Boorso dollar ah iyo abka lacag-bixinta/);
 assert.match(resourcesSo,/>hoopaywallet.com</);
+assert.match(resourcesSo,/<strong>Trezor<\/strong>/);
+assert.match(resourcesSo,/trezorio\.refr\.cc\/default\/u\/zakariya/);
+assert.match(resourcesSo,/\/brand-logo\/hw-t\.png/);
+assert.match(resourcesSo,/>Boorso hardware wallet</);
+assert.doesNotMatch(resourcesSo,/https:\/\/trezor\.io\//);
+
 assert.match(resourcesEn,/<strong>Substack<\/strong>/);
 assert.match(resourcesEn,/substack.com\/@zakariyasharif/);
 assert.match(resourcesEn,/\/brand-logo\/substack.png/);

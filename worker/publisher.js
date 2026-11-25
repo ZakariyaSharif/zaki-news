@@ -249,8 +249,9 @@ const resourceGroups = [
       ],
       [
         "Trezor",
-        "https://trezor.io/",
-        "https://www.google.com/s2/favicons?domain=trezor.io&sz=64"
+        "https://trezorio.refr.cc/default/u/zakariya",
+        "/brand-logo/hw-t.png",
+        ["Boorso hardware wallet", "Hardware wallet"]
       ],
       [
         "MetaMask",
