@@ -264,7 +264,7 @@ const resourceGroups = [
       ],
       [
         "NordVPN",
-        "https://go.nordvpn.net/aff_c?offer_id=15&aff_id=124732&url_id=902",
+        "https://nordvpn.com/zakariyaacademy1",
         "/brand-logo/vpn-n.png"
       ],
       [
