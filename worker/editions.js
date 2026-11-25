@@ -422,7 +422,7 @@ function marketToolsBoard(ctx,variant){
     '<span class="mt-hero-copy">'+edIcon(heroMeta[2])+'<span><strong>'+t(ctx,...heroMeta[0])+'</strong><small>'+heroBlurb+'</small></span></span>'+
     flowBarsSvg()+mtChevron()+
   '</a>';
-  const groups=edToolGroups.map(([id,labels,paths],i)=>{
+  const groups=edToolGroups.map(([id,labels,paths])=>{
     const rows=paths.map(path=>{
       const meta=edToolMeta[path];
       const link=toolHref(ctx,path);
@@ -431,7 +431,7 @@ function marketToolsBoard(ctx,variant){
         edIcon(meta[2])+'<span class="mt-row-label">'+t(ctx,...meta[0])+'</span>'+mtChevron()+
       '</a>';
     }).join('');
-    return '<details class="mt-group" data-tool-group data-group="'+id+'"'+(i===0?' open':'')+'>'+
+    return '<details class="mt-group" data-tool-group data-group="'+id+'" open>'+
       '<summary>'+t(ctx,...labels)+mtChevron('mt-acc-icon')+'</summary>'+
       '<nav>'+rows+'</nav>'+
     '</details>';
@@ -442,6 +442,9 @@ function marketToolsBoard(ctx,variant){
   const heading=page?'<h1 class="mt-title">'+title+'</h1>':'<h2 class="mt-title">'+title+'</h2>';
   return '<section class="mt-board mt-'+variant+'" data-tools-board>'+heading+search+hero+'<div class="mt-groups">'+groups+'</div>'+
     '<p class="mt-empty" data-tool-empty hidden>'+empty+'</p></section>';
+}
+function marketToolsAccordions(){
+  return '<script>(function(){const q=matchMedia("(max-width:899px)");const sync=()=>document.querySelectorAll("[data-tools-board] [data-tool-group]").forEach(d=>{d.open=!q.matches||d.getAttribute("data-group")==="explore"});const start=()=>{sync();q.addEventListener("change",sync)};if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",start);else start();})();</script>';
 }
 function marketToolsPage(ctx){
   const title=t(ctx,'Qalabka suuqa','Market tools');
@@ -577,7 +580,7 @@ function editorialHeader(ctx){
       primary.map(([p,l],i)=>edA(ctx,p,l).replace('<a ','<a data-nav-item="'+i+'" ')).join('')+
       '<button type="button" class="ed-more" data-ed="more" aria-expanded="false" aria-controls="ed-mega">'+t(ctx,'Dheeraad','More')+' '+chevron+'</button>'+
     '</nav>'+mega+
-  '</header>'+editorialTicker(ctx)+sheet;
+  '</header>'+editorialTicker(ctx)+sheet+marketToolsAccordions();
 }
 function homeSectionSort(a,b){
   const ap=a.published_at||'';
