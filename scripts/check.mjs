@@ -485,6 +485,28 @@ assert.match(pceEn,/\/images\/btc-pce-25\.webp/);
 const pceSo=await (await get('/article/bitcoin-hoos-57209-kadib-pce')).text();
 assert.match(pceSo,/Bitcoin oo hoos ugu dhacay \$57,209 kadib sicir bararka Maraykanka/);
 assert.match(await (await get('/?lang=en')).text(),/Bitcoin falls to \$57,209/);
+function homepageArticleHrefs(html){
+  const hrefs=[];
+  const hero=html.match(/class="ed-hero-copy"[\s\S]*?<h1><a href="([^"]+)"/);
+  if(hero) hrefs.push(hero[1]);
+  const latest=html.match(/class="ed-latest"[\s\S]*?<\/ul>/);
+  if(latest) hrefs.push(...[...latest[0].matchAll(/<li><a href="([^"]+)"/g)].map(m=>m[1]));
+  for(const band of html.matchAll(/<section class="ed-cat-band"[^>]*>([\s\S]*?)<\/section>/g)){
+    hrefs.push(...[...band[1].matchAll(/<a class="ed-(?:feature|mini)" href="([^"]+)"/g)].map(m=>m[1]));
+  }
+  return hrefs;
+}
+for(const path of ['/','/?lang=en']){
+  const home=await (await get(path)).text();
+  const hrefs=homepageArticleHrefs(home);
+  const dupes=hrefs.filter((href,i)=>hrefs.indexOf(href)!==i);
+  assert.equal(dupes.length,0,'repeated homepage articles on '+path+': '+dupes.join(', '));
+  const heroBlock=home.match(/<section class="ed-hero"[\s\S]*?<\/section>/);
+  assert.ok(heroBlock, 'missing hero on '+path);
+  const heroHeadings=[...heroBlock[0].matchAll(/<h[1-3]\b/g)];
+  assert.equal(heroHeadings.length,1,'hero should have one text headline on '+path);
+}
+
 const homeThumbs=await (await get('/?lang=en')).text();
 assert.match(homeThumbs,/ed-type-thumb/);
 assert.match(homeThumbs,/\/images\/btc-pce-25\.webp/);

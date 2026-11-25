@@ -625,10 +625,10 @@ function homeMiniCard(ctx,a,pool){
     img+
     '<span class="ed-mini-copy"><h3>'+escape(a.title)+'</h3>'+homeSectionMeta(ctx,a)+'</span></a>';
 }
-function homeCategorySections(ctx,list){
-  const used=new Set();
+function homeCategorySections(ctx,list,used){
+  used=used||new Set();
   const take=(test,limit)=>{
-    const rows=list.filter(a=>!used.has(a.slug)&&test(a)).sort(homeSectionSort).slice(0,limit);
+    const rows=list.filter(a=>a&&a.slug&&!used.has(a.slug)&&test(a)).sort(homeSectionSort).slice(0,limit);
     rows.forEach(a=>used.add(a.slug));
     return rows;
   };
@@ -653,23 +653,17 @@ function homeCategorySections(ctx,list){
     {id:'sharia',title:t(ctx,...shariaTitles),href:editionHref(ctx,'/sharia'),pick:()=>take(a=>['Halal','Haram','Mashbooh'].includes(canonicalCategory(a.category)),5)},
     {id:'guides',title:t(ctx,'Hagayaasha','Guides'),href:editionHref(ctx,catUrl(list.some(a=>canonicalCategory(a.category)==='Guides')?'Guides':'Education')),pick:()=>take(a=>['Guides','Education'].includes(canonicalCategory(a.category)),5)}
   ];
-  // Crypto first in the visual stack, but pick leftovers after specific desks so thin categories can fill.
-  const order=['markets','bitcoin','ethereum','stocks','economy','technology','sharia','guides','crypto'];
-  const picked={};
-  for(const id of order){
-    const def=defs.find(d=>d.id===id);
-    picked[id]=def.pick();
-  }
+  // Render order: hero and Latest are already in `used`, then each band in visual order.
   return defs.map(def=>{
-    const rows=picked[def.id]||[];
-    if(rows.length<3) return '';
+    const rows=def.pick();
+    if(!rows.length) return '';
     const feature=rows[0];
     const rest=rows.slice(1,5);
     return '<section class="ed-cat-band" data-section="'+def.id+'" data-count="'+rows.length+'">'+
       '<div class="ed-section-head"><h2>'+escape(def.title)+'</h2><a href="'+def.href+'">'+t(ctx,'Dhammaan','See all')+'</a></div>'+
-      '<div class="ed-cat-grid">'+
+      '<div class="ed-cat-grid'+(rest.length?'':' is-solo')+'">'+
         homeFeatureCard(ctx,feature,rows)+
-        '<div class="ed-cat-cards is-n'+rest.length+'">'+rest.map(a=>homeMiniCard(ctx,a,rows)).join('')+'</div>'+
+        (rest.length?'<div class="ed-cat-cards is-n'+rest.length+'">'+rest.map(a=>homeMiniCard(ctx,a,rows)).join('')+'</div>':'')+
       '</div></section>';
   }).join('');
 }
@@ -689,9 +683,17 @@ function homeVideoStrip(ctx,videos){
     '<div class="ed-video-row">'+cards+'</div></section>';
 }
 function editorialHome(ctx, list, snapshot, videos){
+  const used=new Set();
   const lead=list[0];
   if(!lead) return '<p>'+t(ctx,'Wax maqaal ah lama helin.','No articles found.')+'</p>';
-  const rest=list.slice(1,7);
+  if(lead.slug) used.add(lead.slug);
+  const rest=[];
+  for(const a of list){
+    if(!a||!a.slug||used.has(a.slug)) continue;
+    rest.push(a);
+    used.add(a.slug);
+    if(rest.length===6) break;
+  }
   const clock='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 8v5l3 2"/></svg>';
   const markIcon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4h10v16l-5-3-5 3z"/></svg>';
   const minutes=t(ctx, wordCount(lead)+' daqiiqo', wordCount(lead)==1?'1 minute':wordCount(lead)+' minutes');
@@ -722,7 +724,7 @@ function editorialHome(ctx, list, snapshot, videos){
       todayMarket(ctx, snapshot)+
     '</section>'+
     homeVideoStrip(ctx,videos)+
-    homeCategorySections(ctx,list)+
+    homeCategorySections(ctx,list,used)+
   '</div>';
 }
 
