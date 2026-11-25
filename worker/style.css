@@ -1034,3 +1034,10 @@ a.ed-coin-link:hover .ed-row-affordance{opacity:1}
   .mt-hero .mt-arrow{grid-column:2;grid-row:1/span 2;align-self:center}
   .mt-page .mt-title{font-size:clamp(30px,9vw,44px)}
 }
+
+.sharia-search{max-width:560px;margin:0 0 18px}
+.sharia-search input{font-size:16px}
+.sharia-empty{margin:0 0 16px;color:var(--dim);font-size:14px}
+@media(max-width:800px){
+  .sharia-search{max-width:none}
+}

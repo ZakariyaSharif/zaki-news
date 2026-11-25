@@ -248,8 +248,15 @@ const coinScreen=await(await get('/sharia?lang=en')).text();
 assert.match(coinScreen,/Bitcoin/);
 assert.match(coinScreen,/DeFi protocol tokens under Haram/);
 assert.match(coinScreen,/Shiba Inu/);
-assert.match(await(await get('/etfs?lang=en')).text(),/embed\/stocks\?view=etfs/);
+const etfEn=await get('/etfs?lang=en');
+assert.equal(etfEn.status,301);
+assert.equal(etfEn.headers.get('location'),'/etf-flows?lang=en');
+const etfSo=await get('/etfs');
+assert.equal(etfSo.status,301);
+assert.equal(etfSo.headers.get('location'),'/etf-flows');
 assert.match(await(await get('/embed/stocks?view=etfs')).text(),/NASDAQ:IBIT/);
+assert.match(await(await get('/?lang=en')).text(),/href="\/etf-flows\?lang=en"[^>]*>ETFs</);
+assert.match(await(await get('/')).text(),/href="\/etf-flows"[^>]*>ETF-yada</);
 assert.match(await(await get('/fear-greed?lang=en')).text(),/data-sentiment-history/);
 const candleFetch=globalThis.fetch;
 try{
@@ -260,6 +267,7 @@ try{
 }finally{globalThis.fetch=candleFetch;}
 const expandedScreen=await(await get('/sharia?lang=en')).text();
 for(const name of ['Bitcoin Cash','Chainlink','Hedera','PancakeSwap','Lido DAO','Pudgy Penguins','Fartcoin'])assert.match(expandedScreen,new RegExp(name));
+for(const name of ['Search a coin','No coin found','data-sharia-query','Aptos','Injective','Official Trump'])assert.match(expandedScreen,new RegExp(name));
 const dailyFetch=globalThis.fetch;
 try{
   globalThis.fetch=async url=>{

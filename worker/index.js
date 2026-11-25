@@ -353,7 +353,7 @@ export default { async fetch(req,env,work) {
   if(path==='/resources')return resourceDirectory(ctx);
   if(path==='/videos')return videosPage(ctx,await videoList(env.DB));
   if(path==='/education')return redirect(editionHref(ctx,'/topic/education'));
-  if(path==='/etfs') return etfPage(ctx);
+  if(path==='/etfs') return new Response(null,{status:301,headers:{location:editionHref(ctx,'/etf-flows')}});
   if(path==='/fear-greed') return sentimentPage(ctx);
   if(path==='/sharia') return shariaPage(ctx);
   if(path==='/embed/stocks') return stockEmbed(ctx);
@@ -367,7 +367,7 @@ export default { async fetch(req,env,work) {
   const list = all.filter(a=>(a.language||'so')===ctx.lang);
   if (path==='/') return home(ctx,list,await marketSnapshot(),await videoList(env.DB));
   if (path==='/sitemap.xml') {
-    const pagePaths=['/','/tools','/resources','/videos','/latest','/topic/stocks','/topic/forex','/sharia','/etfs','/etf-flows','/crypto-bubbles','/ipo-calendar','/earnings-calendar','/profit-calculator','/commodities','/fear-greed','/about','/contact','/terms','/disclaimer','/privacy',...Object.keys(toolsNav).filter(k=>enabled(ctx,k)).map(k=>'/'+k),...(ctx.profile.author?['/author']:[]),...categories.filter(c=>!['Stocks','Forex'].includes(c)&&published.some(a=>canonicalCategory(a.category)===c)).map(catUrl)];
+    const pagePaths=['/','/tools','/resources','/videos','/latest','/topic/stocks','/topic/forex','/sharia','/etf-flows','/crypto-bubbles','/ipo-calendar','/earnings-calendar','/profit-calculator','/commodities','/fear-greed','/about','/contact','/terms','/disclaimer','/privacy',...Object.keys(toolsNav).filter(k=>enabled(ctx,k)).map(k=>'/'+k),...(ctx.profile.author?['/author']:[]),...categories.filter(c=>!['Stocks','Forex'].includes(c)&&published.some(a=>canonicalCategory(a.category)===c)).map(catUrl)];
     const uniquePages=[...new Set(pagePaths)];
     const withEditions=uniquePages.flatMap(p=>[p, p==='/'?'/?lang=en':p+(p.includes('?')?'&':'?')+'lang=en']);
     return xml('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+[...new Set(withEditions)].map(p=>'<url><loc>'+escape(origin+p)+'</loc></url>').join('')+published.map(a=>'<url><loc>'+escape(origin+storyUrl(a))+'</loc><lastmod>'+a.updated_at+'</lastmod></url>').join('')+'</urlset>');

@@ -50,7 +50,7 @@ function coinIcon(symbol){
   return '<img class="coin-logo" src="/coin-logo/'+file+'" alt="" width="25" height="25" loading="lazy" onerror="this.outerHTML=\'<span class=coin-fallback aria-hidden=true>'+letters+'</span>\'">';
 }
 function sectionNav(ctx){
-  return '<nav class="wrap nav market-nav" aria-label="'+t(ctx,'Xogta suuqa','Market data')+'"><a href="'+editionHref(ctx,'/etf-flows')+'">'+t(ctx,'Qulqulka ETF-yada crypto','Crypto ETF flows')+'</a>'+Object.entries(toolsNav).filter(([k])=>enabled(ctx,k)).map(([k,v])=>'<a href="'+editionHref(ctx,'/'+k)+'">'+t(ctx,...v)+'</a>').join('')+'<a href="'+editionHref(ctx,'/etfs')+'">'+t(ctx,'ETF-yada','ETFs')+'</a><a href="'+editionHref(ctx,'/fear-greed')+'">'+t(ctx,'Cabsi iyo Damac','Fear &amp; Greed')+'</a></nav>';
+  return '<nav class="wrap nav market-nav" aria-label="'+t(ctx,'Xogta suuqa','Market data')+'"><a href="'+editionHref(ctx,'/etf-flows')+'">'+t(ctx,'Qulqulka ETF-yada crypto','Crypto ETF flows')+'</a>'+Object.entries(toolsNav).filter(([k])=>enabled(ctx,k)).map(([k,v])=>'<a href="'+editionHref(ctx,'/'+k)+'">'+t(ctx,...v)+'</a>').join('')+'<a href="'+editionHref(ctx,'/etf-flows')+'">'+t(ctx,'ETF-yada','ETFs')+'</a><a href="'+editionHref(ctx,'/fear-greed')+'">'+t(ctx,'Cabsi iyo Damac','Fear &amp; Greed')+'</a></nav>';
 }
 function newsletter(ctx,compact=false){
   if(!enabled(ctx,'newsletter')) return '';
@@ -521,7 +521,7 @@ function editorialHeader(ctx){
     [catUrl('Crypto'),'Crypto'],
     ['/markets',t(ctx,'Suuqyada','Markets')],
     [catUrl('Forex'),'Forex'],
-    ['/etfs',t(ctx,'ETF-yada','ETFs')],
+    ['/etf-flows',t(ctx,'ETF-yada','ETFs')],
     [catUrl('Economy'),t(ctx,'Dhaqaalaha','Economy')],
     [catUrl('Stocks'),categoryName(ctx,'Stocks')],
     [catUrl('Central Banks'),categoryName(ctx,'Central Banks')],
@@ -878,7 +878,7 @@ function suggestPageCatalog(ctx){
   add('/markets','Suuqyada','Markets');
   add('/sharia',shariaTitles[0],shariaTitles[1]);
   add('/smart-money','Smart Money','Smart Money');
-  add('/etfs','ETF-yada','ETFs');
+  add('/etf-flows','ETF-yada','ETFs');
   add('/ipo-calendar','Jadwalka IPO','IPO calendar');
   add('/earnings-calendar','Jadwalka natiijooyinka','Earnings calendar');
   add('/about','Nagu saabsan','About');
