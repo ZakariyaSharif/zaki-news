@@ -505,6 +505,16 @@ const resourceGroups = [
         "Facebook",
         "Https://m.facebook.com/official.zakariya.sharif?ref=bookmarks",
         "https://ugc.production.linktr.ee/Ms7stRoZRDK09oWNgFlA_4525F2F8-312B-4B3B-9B94-45D7FD7B7080.png"
+      ],
+      [
+        "Substack",
+        "https://substack.com/@zakariyasharif",
+        "/brand-logo/substack.png"
+      ],
+      [
+        "Discord",
+        "https://discord.gg/g2kBMMA9TC",
+        "/brand-logo/discord.png"
       ]
     ]
   ]

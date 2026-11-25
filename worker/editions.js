@@ -312,7 +312,7 @@ function siteFooter(ctx){
     ['/unlocks',['Furitaanka tokennada','Token unlocks']],
     ['/fear-greed',['Cabsi iyo Damac','Fear &amp; Greed']],
     ['/profit-calculator',['Xisaabiyaha faa’iidada','Profit calculator']],
-    ['https://zakibubble.zakariyaacademy.com',['Crypto bubble','Crypto bubbles'],true,'bubble.png'],
+    ['https://zakibubble.zakariyaacademy.com',['Crypto bubble','Crypto bubbles'],true],
     ['/halving',['Bitcoin halving','Bitcoin halving']],
     ['/calendar',['Jadwalka dhaqaalaha','Economic calendar']]
   ].filter(([path, , ext])=>{
@@ -324,7 +324,7 @@ function siteFooter(ctx){
   const learn=[
     [editionHref(ctx,'/topic/education'),t(ctx,'Hagayaasha','Guides')],
     [editionHref(ctx,'/videos'),t(ctx,'Muuqaallada','Videos')],
-    [ctx.profile.website||academy,t(ctx,'Koorsada Zakariya Academy','Zakariya Academy courses'),true,'academy.png']
+    [ctx.profile.website||academy,t(ctx,'Koorsada Zakariya Academy','Zakariya Academy courses'),true]
   ];
   const about=[
     [editionHref(ctx,'/about'),t(ctx,'Nagu saabsan','About')],
